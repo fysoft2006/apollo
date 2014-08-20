@@ -10,7 +10,11 @@ import java.util.Random;
  * @author liaoqiqi
  * @version 2014-1-15
  */
-public class RandomUtil {
+public final class RandomUtil {
+
+    private RandomUtil() {
+
+    }
 
     /**
      * 获取一堆数据

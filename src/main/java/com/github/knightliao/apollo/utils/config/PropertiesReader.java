@@ -13,7 +13,11 @@ import java.util.WeakHashMap;
  * @author liaoqiqi
  * @version 2014-8-20
  */
-public class PropertiesReader {
+public final class PropertiesReader {
+
+    private PropertiesReader() {
+
+    }
 
     private static Map<String, Properties> filePropMapping = new WeakHashMap<String, Properties>();
 

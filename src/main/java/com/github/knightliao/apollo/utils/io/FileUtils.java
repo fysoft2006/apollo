@@ -15,7 +15,11 @@ import java.io.Writer;
  * @author liaoqiqi
  * @version 2014-8-20
  */
-public class FileUtils {
+public final class FileUtils {
+
+    private FileUtils() {
+
+    }
 
     /**
      * 关闭文件流

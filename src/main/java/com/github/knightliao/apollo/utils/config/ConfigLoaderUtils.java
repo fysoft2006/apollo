@@ -18,7 +18,11 @@ import org.slf4j.LoggerFactory;
  * @author liaoqiqi
  * @version 2014-6-6
  */
-public class ConfigLoaderUtils {
+public final class ConfigLoaderUtils {
+
+    private ConfigLoaderUtils() {
+
+    }
 
     protected static final Logger LOGGER = LoggerFactory
             .getLogger(ConfigLoaderUtils.class);

@@ -7,7 +7,11 @@ import java.util.Date;
  * @author liaoqiqi
  * @version 2014-8-20
  */
-public abstract class TokenUtil {
+public final class TokenUtil {
+
+    private TokenUtil() {
+
+    }
 
     public static final String getTokenId(int length) {
         if (0 == length) {

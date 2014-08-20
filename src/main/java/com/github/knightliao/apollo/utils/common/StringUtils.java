@@ -12,10 +12,14 @@ import org.slf4j.LoggerFactory;
  * @author liaoqiqi
  * 
  */
-public class StringUtils extends org.apache.commons.lang.StringUtils {
+public final class StringUtils extends org.apache.commons.lang.StringUtils {
 
     private final static Logger LOG = LoggerFactory
             .getLogger(StringUtils.class);
+
+    private StringUtils() {
+
+    }
 
     /**
      * 

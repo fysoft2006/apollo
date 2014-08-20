@@ -8,7 +8,11 @@ import com.google.gson.Gson;
  * @author liaoqiqi
  * @version 2014-6-16
  */
-public class GsonUtils {
+public final class GsonUtils {
+
+    private GsonUtils() {
+
+    }
 
     /**
      * 

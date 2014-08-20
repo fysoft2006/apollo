@@ -8,7 +8,11 @@ import java.lang.reflect.Field;
  * @author liaoqiqi
  * @version 2014-6-11
  */
-public class ClassUtils {
+public final class ClassUtils {
+
+    private ClassUtils() {
+
+    }
 
     /**
      * 由Get Method名称获取Field名

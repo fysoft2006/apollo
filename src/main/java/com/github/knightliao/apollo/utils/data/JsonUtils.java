@@ -21,7 +21,11 @@ import com.github.knightliao.apollo.utils.time.DateUtils;
  * @author liaoqiqi
  * @version 2014-8-20
  */
-public class JsonUtils {
+public final class JsonUtils {
+
+    private JsonUtils() {
+
+    }
 
     private static final Logger log = LoggerFactory.getLogger(JsonUtils.class);
 

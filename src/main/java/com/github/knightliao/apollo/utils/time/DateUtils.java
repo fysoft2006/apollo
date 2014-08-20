@@ -19,7 +19,11 @@ import org.apache.commons.lang.time.FastDateFormat;
  * @author liaoqiqi
  * @version 2014-8-20
  */
-public class DateUtils {
+public final class DateUtils {
+
+    private DateUtils() {
+
+    }
 
     public static final int SECOND = 1;
     public static final int MINUTE = 2;

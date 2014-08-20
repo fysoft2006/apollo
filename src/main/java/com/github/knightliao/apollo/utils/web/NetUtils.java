@@ -14,10 +14,14 @@ import org.slf4j.LoggerFactory;
  * @author liaoqiqi
  * @version 2014-6-17
  */
-public class NetUtils {
+public final class NetUtils {
 
     protected static final Logger LOGGER = LoggerFactory
             .getLogger(NetUtils.class);
+
+    private NetUtils() {
+
+    }
 
     /**
      * PING指定URL是否可用
