@@ -23,9 +23,6 @@
             <scope>provided</scope>
         </dependency>
 
-
-
-
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
@@ -61,11 +58,6 @@
             <scope>provided</scope>
         </dependency>
 
-
-
-
-
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -73,10 +65,6 @@
             <classifier>site</classifier>
             <scope>provided</scope>
         </dependency>
-
-
-
-
 
         <dependency>
             <groupId>junit</groupId>
