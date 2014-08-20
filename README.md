@@ -5,6 +5,8 @@ PhoebusApollo is a useful Java Utils Library.
 
 阿波罗是非常有用的Java类库集合
 
+还未正式发布，敬请期待
+
 ## 项目信息 ##
 
 - Java项目(1.6+)
