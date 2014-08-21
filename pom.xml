@@ -180,7 +180,7 @@
     <scm>
         <url>scm:git:git@github.com:knightliao/apollo</url>
         <connection>scm:git:git@github.com:knightliao/apollo</connection>
-        <tag>xspeed-pbrpc-client</tag>
+        <developerConnection>knightliao</developerConnection>
     </scm>
 
     <profiles>
