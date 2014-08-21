@@ -22,7 +22,7 @@ Disconf当前最新版本：
 - 命名为apollo
 - 高效、简单的 Java类库集合
 
-## 1.0 版本 ##
+## Features ##
 
 支持的模块有：
 
@@ -33,6 +33,21 @@ Disconf当前最新版本：
 - time
 - tool
 - web
+
+## 使用 ##
+
+在您的 Maven POM 文件里加入：
+
+    <dependency>
+        <groupId>com.github.knightliao.apollo</groupId>
+        <artifactId>apollo</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+
+主要依赖为：
+
+- gson(2.3)
+- guava(16.0)
 
 ## Authors ##
 
