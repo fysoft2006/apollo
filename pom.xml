@@ -245,7 +245,7 @@
         </profile>
     </profiles>
     <version>1.0.0</version>
-    <groupId>com.github.knightliao</groupId>
+    <groupId>com.github.knightliao.apollo</groupId>
     <description>https://github.com/knightliao/apollo</description>
 
     <developers>

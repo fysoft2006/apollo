@@ -5,7 +5,12 @@ PhoebusApollo is a useful Java Utils Library.
 
 阿波罗是非常有用的Java类库集合
 
-还未正式发布，敬请期待
+Disconf当前最新版本：
+
+- 1.0.0
+
+在Maven Central Repository里查看[com.github.knightliao.apollo](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.knightliao.apollo )
+
 
 ## 项目信息 ##
 
