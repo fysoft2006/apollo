@@ -1,4 +1,4 @@
-apollo [![Build Status](https://travis-ci.org/knightliao/apollo.svg?branch=master)](https://travis-ci.org/knightliao/apollo)
+apollo [![Build Status](https://travis-ci.org/knightliao/apollo.svg?branch=master)](https://travis-ci.org/knightliao/apollo) [![Coverage Status](https://coveralls.io/repos/knightliao/apollo/badge.png)](https://coveralls.io/r/knightliao/apollo)
 ==============
 
 PhoebusApollo is a useful Java Utils Library.
