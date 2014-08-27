@@ -15,6 +15,27 @@
         </license>
     </licenses>
 
+    <properties>
+        <!-- Spring項目配置 -->
+        <encoding>UTF-8</encoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+
+        <!-- JAVA环境 -->
+        <java.version>1.6</java.version>
+        <source.version>1.6</source.version>
+        <target.version>1.6</target.version>
+        <spring.version>3.1.2.RELEASE</spring.version>
+        <junit.version>4.10</junit.version>
+        <jsp.version>2.0</jsp.version>
+        <servlet.version>2.4</servlet.version>
+        <cglib.version>2.2.2</cglib.version>
+
+        <!-- resource path -->
+        <project.build.online.sourceDir>${project.basedir}/src/main/online-resources</project.build.online.sourceDir>
+        <project.build.offline.sourceDir>${project.basedir}/src/main/resources</project.build.offline.sourceDir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>commons-io</groupId>
