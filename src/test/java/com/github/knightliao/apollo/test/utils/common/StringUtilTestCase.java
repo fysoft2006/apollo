@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.github.knightliao.apollo.test.utils.common;
 
 import static org.junit.Assert.assertEquals;
@@ -13,8 +10,9 @@ import org.junit.Test;
 import com.github.knightliao.apollo.utils.common.StringUtil;
 
 /**
- * @author <a href="mailto:xuchen06@baidu.com">xuc</a>
- * @version create on 2014年7月21日 上午3:35:59
+ * 
+ * @author liaoqiqi
+ * @version 2014-8-28
  */
 public class StringUtilTestCase {
 
