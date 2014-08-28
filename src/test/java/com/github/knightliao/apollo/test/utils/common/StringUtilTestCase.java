@@ -16,7 +16,7 @@ import com.github.knightliao.apollo.utils.common.StringUtil;
  * @author <a href="mailto:xuchen06@baidu.com">xuc</a>
  * @version create on 2014年7月21日 上午3:35:59
  */
-public class StringUtilTest {
+public class StringUtilTestCase {
 
     // ==========================================================================
     // 默认值函数。
