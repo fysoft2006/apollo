@@ -7,7 +7,7 @@ PhoebusApollo is a useful Java Utils Library.
 
 apollo当前最新版本：
 
-- 1.0.0
+- 1.0.1
 
 在Maven Central Repository里查看[com.github.knightliao.apollo](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.knightliao.apollo )
 
@@ -41,7 +41,7 @@ apollo当前最新版本：
     <dependency>
         <groupId>com.github.knightliao.apollo</groupId>
         <artifactId>apollo</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </dependency>
 
 主要依赖为：
