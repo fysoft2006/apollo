@@ -1,9 +1,10 @@
 package com.github.knightliao.apollo.utils.common;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-
-
 
 /**
  * 有关字符串处理的工具类。
@@ -15,6 +16,71 @@ import org.apache.commons.lang.StringUtils;
  * @version 2014-8-28
  */
 public abstract class StringUtil {
+
+    /**
+     * 
+     * @param source
+     * @param token
+     * @return
+     */
+    public static List<Integer> parseStringToIntegerList(String source,
+            String token) {
+
+        if (StringUtils.isBlank(source) || StringUtils.isEmpty(token)) {
+            return null;
+        }
+
+        List<Integer> result = new ArrayList<Integer>();
+        String[] units = source.split(token);
+        for (String unit : units) {
+            result.add(Integer.valueOf(unit));
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param source
+     * @param token
+     * @return
+     */
+    public static List<Long> parseStringToLongList(String source, String token) {
+
+        if (StringUtils.isBlank(source) || StringUtils.isEmpty(token)) {
+            return null;
+        }
+
+        List<Long> result = new ArrayList<Long>();
+        String[] units = source.split(token);
+        for (String unit : units) {
+            result.add(Long.valueOf(unit));
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param source
+     * @param token
+     * @return
+     */
+    public static List<String> parseStringToStringList(String source,
+            String token) {
+
+        if (StringUtils.isBlank(source) || StringUtils.isEmpty(token)) {
+            return null;
+        }
+
+        List<String> result = new ArrayList<String>();
+
+        String[] units = source.split(token);
+        for (String unit : units) {
+            result.add(unit);
+        }
+        return result;
+    }
 
     // ==========================================================================
     // 默认值函数。
