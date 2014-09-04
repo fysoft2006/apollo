@@ -48,7 +48,7 @@ apollo当前最新版本：
 主要依赖为：
 
 - gson(2.3)
-- guava(16.0)
+- guava(16.0) 
 
 ## Authors ##
 
