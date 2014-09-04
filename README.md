@@ -5,10 +5,10 @@ PhoebusApollo is a useful Java Utils Library.
 
 阿波罗是非常有用的Java类库集合
 
-apollo当前最新版本：
+apollo.git branches and Maven version:
 
-- dev:    1.0.3-SNAPSHOT
-- stable：1.0.2
+- dev(develop branch):    1.0.3-SNAPSHOT
+- master(stable branch)：1.0.2
 
 在Maven Central Repository里查看[com.github.knightliao.apollo](http://search.maven.org/#search%7Cga%7C1%7Ccom.github.knightliao.apollo )
 
