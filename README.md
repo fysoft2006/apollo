@@ -42,7 +42,7 @@ apollo当前最新版本：
     <dependency>
         <groupId>com.github.knightliao.apollo</groupId>
         <artifactId>apollo</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
     </dependency>
 
 主要依赖为：
