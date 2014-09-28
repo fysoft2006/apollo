@@ -11,7 +11,7 @@ import java.io.Writer;
 
 /**
  * 文件操作的方法集
- * 
+ *
  * @author liaoqiqi
  * @version 2014-8-20
  */
@@ -23,9 +23,8 @@ public final class FileUtils {
 
     /**
      * 关闭文件流
-     * 
-     * @param w
-     *            上午10:27:27 created by Darwin(Tianxin)
+     *
+     * @param w 上午10:27:27 created by Darwin(Tianxin)
      */
     public final static void closeWriter(Writer w) {
         if (w != null)
@@ -37,9 +36,8 @@ public final class FileUtils {
 
     /**
      * 关闭文件流
-     * 
-     * @param r
-     *            上午10:27:27 created by Darwin(Tianxin)
+     *
+     * @param r 上午10:27:27 created by Darwin(Tianxin)
      */
     public final static void closeReader(Reader r) {
         if (r != null)
@@ -51,9 +49,8 @@ public final class FileUtils {
 
     /**
      * 关闭文件流
-     * 
-     * @param os
-     *            上午10:27:27 created by Darwin(Tianxin)
+     *
+     * @param os 上午10:27:27 created by Darwin(Tianxin)
      */
     public final static void closeOutputStream(OutputStream os) {
         if (os != null)
@@ -65,9 +62,8 @@ public final class FileUtils {
 
     /**
      * 关闭文件流
-     * 
-     * @param is
-     *            上午10:27:27 created by Darwin(Tianxin)
+     *
+     * @param is 上午10:27:27 created by Darwin(Tianxin)
      */
     public final static void closeInputStream(InputStream is) {
         if (is != null)

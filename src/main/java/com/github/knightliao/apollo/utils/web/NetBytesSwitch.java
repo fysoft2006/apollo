@@ -1,14 +1,13 @@
 package com.github.knightliao.apollo.utils.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- * 
  * @author liaoqiqi
  * @version 2014-8-21
  */

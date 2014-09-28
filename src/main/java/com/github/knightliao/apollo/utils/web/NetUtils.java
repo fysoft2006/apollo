@@ -1,16 +1,16 @@
 package com.github.knightliao.apollo.utils.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * 网络工具
- * 
+ *
  * @author liaoqiqi
  * @version 2014-6-17
  */
@@ -25,7 +25,7 @@ public final class NetUtils {
 
     /**
      * PING指定URL是否可用
-     * 
+     *
      * @param address
      * @return
      */

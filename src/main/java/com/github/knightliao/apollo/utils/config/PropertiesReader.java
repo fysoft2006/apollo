@@ -9,21 +9,21 @@ import java.util.WeakHashMap;
 
 /**
  * 读取properties文件的辅助类
- * 
+ *
  * @author liaoqiqi
  * @version 2014-8-20
  */
 public final class PropertiesReader {
 
+    private static Map<String, Properties> filePropMapping = new WeakHashMap<String, Properties>();
+
     private PropertiesReader() {
 
     }
 
-    private static Map<String, Properties> filePropMapping = new WeakHashMap<String, Properties>();
-
     /**
      * 取得指定properties文件的指定key的value
-     * 
+     *
      * @param fileName
      * @param key
      * @return
@@ -38,7 +38,7 @@ public final class PropertiesReader {
 
     /**
      * 将文件中配置信息填充到properties对象中(用earth的ClassLoader)
-     * 
+     *
      * @param fileName
      * @return Properties对象
      * @author liuzeyin
@@ -49,7 +49,7 @@ public final class PropertiesReader {
 
     /**
      * 将文件中配置信息填充到properties对象中(用指定的ClassLoader)
-     * 
+     *
      * @param fileName
      * @param cl
      * @return Properties对象

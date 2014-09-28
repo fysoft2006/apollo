@@ -3,7 +3,6 @@ package com.github.knightliao.apollo.utils.web;
 import java.net.UnknownHostException;
 
 /**
- * 
  * @author liaoqiqi
  * @version 2013-10-16
  */

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * 
  * @author liaoqiqi
  * @version 2014-1-15
  */
@@ -18,7 +17,7 @@ public final class RandomUtil {
 
     /**
      * 获取一堆数据
-     * 
+     *
      * @param limit
      * @return
      */
@@ -47,7 +46,7 @@ public final class RandomUtil {
 
     /**
      * [min,max]
-     * 
+     *
      * @param min
      * @param max
      * @return

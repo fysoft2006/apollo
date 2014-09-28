@@ -3,7 +3,6 @@ package com.github.knightliao.apollo.utils.tool;
 import java.util.Date;
 
 /**
- * 
  * @author liaoqiqi
  * @version 2014-8-20
  */
@@ -39,7 +38,7 @@ public final class TokenUtil {
 
     /**
      * 获取UUID
-     * 
+     *
      * @return
      */
     public static final String generateToken() {

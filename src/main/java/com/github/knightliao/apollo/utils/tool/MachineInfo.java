@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * 
  * @author liaoqiqi
  * @version 2014-7-30
  */
@@ -15,9 +14,8 @@ public final class MachineInfo {
     }
 
     /**
-     * 
-     * @Description: 获取机器名
      * @return
+     * @Description: 获取机器名
      */
     public static String getHostName() throws Exception {
 
@@ -34,9 +32,8 @@ public final class MachineInfo {
     }
 
     /**
-     * 
-     * @Description: 获取机器名
      * @return
+     * @Description: 获取机器名
      */
     public static String getHostIp() throws Exception {
 

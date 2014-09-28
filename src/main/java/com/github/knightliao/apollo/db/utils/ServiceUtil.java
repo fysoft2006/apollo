@@ -1,15 +1,15 @@
 package com.github.knightliao.apollo.db.utils;
 
+import com.github.knightliao.apollo.db.bo.BaseObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.knightliao.apollo.db.bo.BaseObject;
-
 /**
  * Service层工具
- * 
+ *
  * @author liaoqiqi
  * @version 2014-2-20
  */
@@ -17,7 +17,7 @@ public class ServiceUtil {
 
     /**
      * 转换成Map
-     * 
+     *
      * @param enTs
      * @return
      */
@@ -40,7 +40,7 @@ public class ServiceUtil {
 
     /**
      * 获得List<T> 的ID列表
-     * 
+     *
      * @param enTs
      * @return
      */

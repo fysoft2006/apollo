@@ -4,15 +4,16 @@ import java.lang.reflect.Field;
 
 /**
  * 类工具
- * 
+ *
  * @author liaoqiqi
  * @version 2014-6-11
  */
 public class ClassUtils {
 
+
     /**
      * 由Get Method名称获取Field名
-     * 
+     *
      * @return
      */
     public static String getFieldNameByGetMethodName(String methodName) {
@@ -48,7 +49,7 @@ public class ClassUtils {
 
     /**
      * 根据Field类型设置值
-     * 
+     *
      * @param field
      */
     public static void setFieldValeByType(Field field, Object obj, String value)
@@ -92,10 +93,14 @@ public class ClassUtils {
         }
     }
 
+
     /**
      * 根据Field类型返回值
-     * 
-     * @param field
+     *
+     * @param type
+     * @param value
+     * @return
+     * @throws Exception
      */
     public static Object getValeByType(Class<?> type, Object value)
             throws Exception {

@@ -1,7 +1,6 @@
 package com.github.knightliao.apollo.utils.tool;
 
 /**
- * 
  * @author liaoqiqi
  * @version 2014-8-21
  */

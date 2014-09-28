@@ -1,15 +1,13 @@
 package com.github.knightliao.apollo.utils.io;
 
-import java.io.File;
-
 import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+
 /**
- * @@Description: useful for dir operation
- * 
  * @author liaoqiqi
+ * @@Description: useful for dir operation
  * @email liaoqiqi@baidu.com
- * 
  */
 public final class OsUtil {
 
@@ -19,12 +17,11 @@ public final class OsUtil {
 
     /**
      * 建多层目录
-     * 
-     * @Description: make directory
+     *
      * @param filePath
      * @return boolean
      * @throws
-     * 
+     * @Description: make directory
      */
     public static boolean makeDirs(final String filePath) {
         File f = new java.io.File(filePath);
@@ -36,13 +33,10 @@ public final class OsUtil {
     }
 
     /**
-     * 
-     * @Description: 文件或目录是否存在
-     * 
      * @param filePathString
-     * @return
-     * @throws Exception
      * @return boolean
+     * @throws Exception
+     * @Description: 文件或目录是否存在
      * @author liaoqiqi
      * @date 2013-6-13
      */
@@ -54,13 +48,10 @@ public final class OsUtil {
     }
 
     /**
-     * 
-     * @Description: JOIN PATH
-     * 
-     * @param filePathString
-     * @return
-     * @throws Exception
+     * @param pathElements
      * @return boolean
+     * @throws Exception
+     * @Description: JOIN PATH
      * @author liaoqiqi
      * @date 2013-6-13
      */
@@ -95,7 +86,7 @@ public final class OsUtil {
 
     /**
      * 获取File相对于Folder的相对路径
-     * 
+     * <p/>
      * returns null if file isn't relative to folder
      */
     public static String getRelativePath(File file, File folder) {
@@ -111,12 +102,10 @@ public final class OsUtil {
     }
 
     /**
-     * 
-     * @Description: 转移文件
-     * 
      * @param src
      * @param dest
      * @return void
+     * @Description: 转移文件
      * @author liaoqiqi
      * @date 2013-6-20
      */

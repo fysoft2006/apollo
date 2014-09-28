@@ -1,14 +1,14 @@
 package com.github.knightliao.apollo.utils.data;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
+import java.util.Map;
+
 /**
  * Google Json工具
- * 
+ *
  * @author liaoqiqi
  * @version 2014-6-16
  */
@@ -19,7 +19,6 @@ public final class GsonUtils {
     }
 
     /**
-     * 
      * @param object
      * @return
      */
@@ -32,7 +31,7 @@ public final class GsonUtils {
 
     /**
      * Parse json to map
-     * 
+     *
      * @param json
      * @return
      */

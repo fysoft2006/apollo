@@ -1,5 +1,8 @@
 package com.github.knightliao.apollo.utils.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,29 +12,21 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * 配置导入工具
- * 
+ *
  * @author liaoqiqi
  * @version 2014-6-6
  */
 public final class ConfigLoaderUtils {
 
-    private ConfigLoaderUtils() {
-
-    }
-
     protected static final Logger LOGGER = LoggerFactory
             .getLogger(ConfigLoaderUtils.class);
+    public static String CLASS_PATH = "";
 
     // loader
     private static ClassLoader loader = ConfigLoaderUtils.class
             .getClassLoader();
-
-    public static String CLASS_PATH = "";
 
     //
     // get class path
@@ -53,12 +48,15 @@ public final class ConfigLoaderUtils {
         }
     }
 
+
+    private ConfigLoaderUtils() {
+
+    }
+
     /**
-     * 
-     * @Description: 使用TOMCAT方式来导入
-     * 
      * @param propertyFilePath
      * @return void
+     * @Description: 使用TOMCAT方式来导入
      * @author liaoqiqi
      * @date 2013-6-19
      */
@@ -85,11 +83,9 @@ public final class ConfigLoaderUtils {
     }
 
     /**
-     * 
-     * @Description: 使用普通模式导入
-     * 
      * @param propertyFilePath
      * @return void
+     * @Description: 使用普通模式导入
      * @author liaoqiqi
      * @date 2013-6-19
      */
@@ -102,13 +98,10 @@ public final class ConfigLoaderUtils {
     }
 
     /**
-     * 
-     * @Description: 配置文件载入器助手
-     * 
      * @param propertyFilePath
-     * @return
-     * @throws Exception
      * @return Properties
+     * @throws Exception
+     * @Description: 配置文件载入器助手
      * @author liaoqiqi
      * @date 2013-6-19
      */
@@ -135,12 +128,9 @@ public final class ConfigLoaderUtils {
     }
 
     /**
-     * 
-     * @Description: 采用两种方式来载入文件
-     * 
-     * @param file
-     * @return
+     * @param filePath
      * @return InputStream
+     * @Description: 采用两种方式来载入文件
      * @author liaoqiqi
      * @date 2013-6-20
      */

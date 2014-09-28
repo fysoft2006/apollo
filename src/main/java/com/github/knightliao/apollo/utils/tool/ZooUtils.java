@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
  * @author liaoqiqi
  * @version 2014-7-30
  */
@@ -19,7 +18,7 @@ public final class ZooUtils {
 
     /**
      * 一个可读性良好的路径Value
-     * 
+     *
      * @return
      */
     public static String getIp() {

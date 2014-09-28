@@ -1,48 +1,41 @@
 package com.github.knightliao.apollo.utils.time;
 
+import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang.time.FastDateFormat;
+
 import java.text.Format;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.FastDateFormat;
+import java.util.*;
 
 /**
  * 日期格式化utils
- * 
+ *
  * @author liaoqiqi
  * @version 2014-8-20
  */
 public final class DateUtils {
-
-    private DateUtils() {
-
-    }
 
     public static final int SECOND = 1;
     public static final int MINUTE = 2;
     public static final int HOUR = 3;
     public static final int DAY = 4;
     public static final int MILLI_FACTOR = 1000;
-
     public static final FastDateFormat ISO_DATETIME_FORMAT = FastDateFormat
             .getInstance("yyyy-MM-dd HH:mm:ss");
-
     /**
      * DSP 系统里默认的日期格式
      */
     public static final String DSP_DEFAULT_TIME_FORMAT = "yyyyMMddHHmmss";
 
+    private DateUtils() {
+
+    }
+
     /**
-     * 
      * #func 获取指定日期的23点的时间
-     * 
+     *
      * @author wangchongjie
      * @version 1.0
      */
@@ -56,11 +49,9 @@ public final class DateUtils {
 
     /**
      * 按照给定格式返回代表日期的字符串
-     * 
-     * @param pDate
-     *            Date
-     * @param format
-     *            String 日期格式
+     *
+     * @param pDate  Date
+     * @param format String 日期格式
      * @return String 代表日期的字符串
      */
     public static String formatDate(java.util.Date pDate, String format) {
@@ -73,10 +64,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 判断指定日期的格式是否合法<br>
      * #desc 在此添加实现相关说明
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -86,10 +76,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 格式化日期<br>
      * #desc 在此添加实现相关说明
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -101,10 +90,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 格式化日期<br>
      * #desc 使用yyyy-MM-dd作为样式
-     * 
+     *
      * @author hedan
      * @version VERSION
      */
@@ -113,27 +101,25 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 把字符串转化为日期<br>
      * #desc 在此添加实现相关说明
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
     public static Date parseDate(String date, String pattern) {
         try {
             return org.apache.commons.lang.time.DateUtils.parseDate(date,
-                    new String[] { pattern });
+                    new String[]{pattern});
         } catch (ParseException e) {
             return null;
         }
     }
 
     /**
-     * 
      * #func 把字符串转化为日期<br>
      * #desc 使用yyyy-MM-dd作为样式
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -143,17 +129,16 @@ public final class DateUtils {
         }
         try {
             return org.apache.commons.lang.time.DateUtils.parseDate(date,
-                    new String[] { DSP_DEFAULT_TIME_FORMAT });
+                    new String[]{DSP_DEFAULT_TIME_FORMAT});
         } catch (ParseException e) {
             return null;
         }
     }
 
     /**
-     * 
      * #func 计算相对年<br>
      * #desc amount可以为负数
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -162,10 +147,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 计算相对月<br>
      * #desc amount可以为负数
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -174,10 +158,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 计算相对日<br>
      * #desc amount可以为负数
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -186,10 +169,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 计算相对毫秒<br>
      * #desc amount可以为负数
-     * 
+     *
      * @author wangchongjie
      * @version 1.0
      */
@@ -199,10 +181,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 计算相对星期<br>
      * #desc 在此添加实现相关说明
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -211,36 +192,34 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 计算时间跨度<br>
      * #desc 计算方式：结束时间减开始时间
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
     public static long getTimeSpan(Date begin, Date end, int type) {
         long diff = end.getTime() - begin.getTime();
         switch (type) {
-        case DAY:
-        default:
-            return diff / org.apache.commons.lang.time.DateUtils.MILLIS_PER_DAY;
-        case HOUR:
-            return diff
-                    / org.apache.commons.lang.time.DateUtils.MILLIS_PER_HOUR;
-        case MINUTE:
-            return diff
-                    / org.apache.commons.lang.time.DateUtils.MILLIS_PER_MINUTE;
-        case SECOND:
-            return diff
-                    / org.apache.commons.lang.time.DateUtils.MILLIS_PER_SECOND;
+            case DAY:
+            default:
+                return diff / org.apache.commons.lang.time.DateUtils.MILLIS_PER_DAY;
+            case HOUR:
+                return diff
+                        / org.apache.commons.lang.time.DateUtils.MILLIS_PER_HOUR;
+            case MINUTE:
+                return diff
+                        / org.apache.commons.lang.time.DateUtils.MILLIS_PER_MINUTE;
+            case SECOND:
+                return diff
+                        / org.apache.commons.lang.time.DateUtils.MILLIS_PER_SECOND;
         }
     }
 
     /**
-     * 
      * #func 获得日期差<br>
      * #desc 不足一天的忽略
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -249,10 +228,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 获得小时差<br>
      * #desc 不足一小时的忽略
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -261,10 +239,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 获得分钟差<br>
      * #desc 不足一分钟的忽略
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -273,10 +250,9 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 获得秒差<br>
      * #desc 不足一秒的忽略
-     * 
+     *
      * @author hedan
      * @version 4.0
      */
@@ -285,9 +261,8 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 获取月份差<br>
-     * 
+     *
      * @author dongguoshuang
      */
     public static int getMonthSpan(Date begin, Date end) {
@@ -301,9 +276,8 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 获取当前时间当月的第一天<br>
-     * 
+     *
      * @author dongguoshuang
      */
     public static Date getFirstDayOfMonth(Date date) {
@@ -314,9 +288,8 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 获取当前时间当月的最后一天<br>
-     * 
+     *
      * @author dulin
      */
     public static Date getLastDayOfMonth(Date date) {
@@ -327,9 +300,8 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 获取当前时间本周的第一天<br>
-     * 
+     *
      * @author dulin
      */
     public static Date getFirstDayOfWeek(Date date) {
@@ -353,16 +325,14 @@ public final class DateUtils {
     }
 
     /**
-     * 
      * #func 获取时间的完整格式<br>
      * #desc addDays为计算相对时间，可为负数
-     * 
+     *
      * @author dulin
      * @version 4.0.14
-     * 
      */
     public static String parseFullFormat(String dateStr, String pattern,
-            int addDays) {
+                                         int addDays) {
         try {
             Date date = parseDate(dateStr, pattern);
             if (addDays != 0) {
@@ -376,13 +346,12 @@ public final class DateUtils {
 
     /**
      * 返回指定字符串表示的日期，时，分，秒为0
-     * 
-     * @author zengyunfeng
-     * @version 1.1.0
-     * @param date
-     *            ： 格式为yyyyMMdd
+     *
+     * @param date ： 格式为yyyyMMdd
      * @return
      * @throws ParseException
+     * @author zengyunfeng
+     * @version 1.1.0
      */
     public static Date strToDate(String date) throws ParseException {
 
@@ -396,13 +365,12 @@ public final class DateUtils {
 
     /**
      * 返回指定字符串表示的日期，时，分，秒为0
-     * 
-     * @author zengyunfeng
-     * @version 1.1.0
-     * @param date
-     *            ： 格式为yyyyMMdd
+     *
+     * @param date ： 格式为yyyyMMdd
      * @return
      * @throws ParseException
+     * @author zengyunfeng
+     * @version 1.1.0
      */
     public static Date stringToDate(String date) throws ParseException {
 
@@ -416,13 +384,12 @@ public final class DateUtils {
 
     /**
      * 返回指定字符串表示的时间，分，秒为0
-     * 
-     * @author zengyunfeng
-     * @version 1.1.0
-     * @param time
-     *            :格式为yyyyMMdd:HH
+     *
+     * @param time :格式为yyyyMMdd:HH
      * @return
      * @throws ParseException
+     * @author zengyunfeng
+     * @version 1.1.0
      */
     public static Date strToTime(String time) throws ParseException {
 
@@ -436,7 +403,7 @@ public final class DateUtils {
 
     /**
      * 生成当前时间对应的包含小时的时间字符串：yyyyMMddHH
-     * 
+     *
      * @return String 时间字符串
      */
     public static String getHourStr() {
@@ -447,11 +414,10 @@ public final class DateUtils {
 
     /**
      * 返回指定格式的时间字符串：yyyy-MM-dd HH:mm:ss
-     * 
+     *
      * @param date
      * @return
-     * @throws ParseException下午01
-     *             :12:32
+     * @throws :12:32
      */
     public static String getDateStr(Date date) {
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
@@ -461,13 +427,10 @@ public final class DateUtils {
 
     /**
      * 生成java.util.Date类型的对象
-     * 
-     * @param year
-     *            int 年
-     * @param month
-     *            int 月
-     * @param day
-     *            int 日
+     *
+     * @param year  int 年
+     * @param month int 月
+     * @param day   int 日
      * @return Date java.util.Date类型的对象
      */
     public static Date getDate(int year, int month, int day) {
@@ -486,15 +449,11 @@ public final class DateUtils {
 
     /**
      * 生成java.util.Date类型的对象
-     * 
-     * @param year
-     *            int 年
-     * @param month
-     *            int 月
-     * @param day
-     *            int 日
-     * @param hour
-     *            int 小时
+     *
+     * @param year  int 年
+     * @param month int 月
+     * @param day   int 日
+     * @param hour  int 小时
      * @return Date java.util.Date对象
      */
     public static Date getDate(int year, int month, int day, int hour) {
@@ -505,7 +464,7 @@ public final class DateUtils {
 
     /**
      * 生成圆整至小时的当前时间 例如：若当前时间为（2004-08-01 11:30:58），将获得（2004-08-01 11:00:00）的日期对象
-     * 
+     *
      * @return Date java.util.Date对象
      */
     public static Date getRoundedHourCurDate() {
@@ -522,7 +481,7 @@ public final class DateUtils {
 
     /**
      * 生成当天零时的日期对象 例如：若当前时间为（2004-08-01 11:30:58），将获得（2004-08-01 00:00:00）的日期对象
-     * 
+     *
      * @return Date java.util.Date对象
      */
     public static Date getRoundedDayCurDate() {
@@ -535,7 +494,7 @@ public final class DateUtils {
 
     /**
      * 生成某天零时的日期对象 例如：若输入时间为（2004-08-01 11:30:58），将获得（2004-08-01 00:00:00）的日期对象
-     * 
+     *
      * @return Date java.util.Date对象
      */
     public static Date getRoundedDay(Date dt) {
@@ -548,9 +507,8 @@ public final class DateUtils {
 
     /**
      * 生成圆整至小时的当前时间 例如：若给定时间为（2004-08-01 11:30:58），将获得（2004-08-01 11:00:00）的日期对象
-     * 
-     * @param dt
-     *            Date java.util.Date对象
+     *
+     * @param dt Date java.util.Date对象
      * @return Date java.util.Date对象
      */
     public static Date getRoundedHourDate(Date dt) {
@@ -569,9 +527,8 @@ public final class DateUtils {
     /**
      * 获得给定时间的第二天零时的日期对象 例如：若给定时间为（2004-08-01 11:30:58），将获得（2004-08-02
      * 00:00:00）的日期对象 若给定时间为（2004-08-31 11:30:58），将获得（2004-09-01 00:00:00）的日期对象
-     * 
-     * @param dt
-     *            Date 给定的java.util.Date对象
+     *
+     * @param dt Date 给定的java.util.Date对象
      * @return Date java.util.Date对象
      */
 
@@ -607,10 +564,8 @@ public final class DateUtils {
     }
 
     /**
-     * @param dt
-     *            Date 给定的java.util.Date对象
-     * @param weekDay
-     *            int 就是周几的”几“，周日是7
+     * @param dt      Date 给定的java.util.Date对象
+     * @param weekDay int 就是周几的”几“，周日是7
      * @return Date java.util.Date对象
      */
     public static Date getWeekDay(Date dt, int weekDay) {
@@ -627,9 +582,8 @@ public final class DateUtils {
     /**
      * 获得给定时间的第N天零时的日期对象 例如：若给定时间为（2004-08-01 11:30:58），将获得（2004-08-02
      * 00:00:00）的日期对象 若给定时间为（2004-08-31 11:30:58），将获得（2004-09-01 00:00:00）的日期对象
-     * 
-     * @param dt
-     *            Date 给定的java.util.Date对象
+     *
+     * @param dt Date 给定的java.util.Date对象
      * @return Date java.util.Date对象
      */
     public static Date getNextDay(Date dt, Long n) {
@@ -639,13 +593,13 @@ public final class DateUtils {
 
         return new GregorianCalendar(cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
-                        + n.intValue()).getTime();
+                + n.intValue()).getTime();
 
     }
 
     /**
      * 如果当天在后续这个月不存在这天，则返回期望这个月的最后一天 20081231 -1 返回20081130
-     * 
+     *
      * @param dt
      * @param n
      * @return上午11:16:22
@@ -673,7 +627,7 @@ public final class DateUtils {
     /**
      * 如果当天在后续这个月不存在这天，则返回期望这个月后一个月的第一天 20081231 - 1 返回20081201 20080831 + 1
      * 返回20080930
-     * 
+     *
      * @param dt
      * @param n
      * @return上午11:22:39
@@ -719,7 +673,7 @@ public final class DateUtils {
     /**
      * 获得当前时间的第二天零时的日期对象 例如：若当前时间为（2004-08-01 11:30:58），将获得（2004-08-02
      * 00:00:00）的日期对象 若当前时间为（2004-08-31 11:30:58），将获得（2004-09-01 00:00:00）的日期对象
-     * 
+     *
      * @return Date java.util.Date对象
      */
     public static Date getNextDay() {
@@ -733,9 +687,8 @@ public final class DateUtils {
 
     /**
      * 将java.util.Date类型的对象转换为java.sql.Timestamp类型的对象
-     * 
-     * @param dt
-     *            Date
+     *
+     * @param dt Date
      * @return Timestamp
      */
     public static java.sql.Timestamp convertSqlDate(Date dt) {
@@ -747,7 +700,7 @@ public final class DateUtils {
 
     /**
      * 格式化当前时间，返回如："yyyyMMdd"形式的字符串
-     * 
+     *
      * @return String
      */
     public static String formatCurrrentDate() {
@@ -757,9 +710,8 @@ public final class DateUtils {
 
     /**
      * 返回给定时间的小时数 例如：时间（2004-08-01 3:12:23）将返回 03 时间（2004-08-01 19:12:23）将返回19
-     * 
-     * @param pDate
-     *            Date 给定时间
+     *
+     * @param pDate Date 给定时间
      * @return String 代表小时数的字符串
      */
     public static String getHour(Date pDate) {
@@ -768,7 +720,7 @@ public final class DateUtils {
 
     /**
      * 获得上一个月的最后一天
-     * 
+     *
      * @return
      */
     public static Calendar getTheLastDayOfTheMonth(int year, int month) {
@@ -795,7 +747,7 @@ public final class DateUtils {
 
     /**
      * 取得指定日期所在周的前一周的第一天
-     * 
+     *
      * @param date
      * @return
      * @author yang_yun
@@ -817,9 +769,8 @@ public final class DateUtils {
 
     /**
      * 验证字符串是不是合法的日期；严格判断日期格式YYYYMMDD的正则表达式：包括闰年的判断、大月小月的判断
-     * 
-     * @param dateString
-     *            待验证的日期字符串
+     *
+     * @param dateString 待验证的日期字符串
      * @return 满足则返回true，不满足则返回false
      * @author zhangpeng mrd3.4.0
      */
@@ -916,10 +867,10 @@ public final class DateUtils {
     }
 
     /**
-     * @Title: getTimeInSeconds
-     * @Description: 返回服务器时间的秒数
      * @return long
      * @throws
+     * @Title: getTimeInSeconds
+     * @Description: 返回服务器时间的秒数
      */
     public static long getTimeInSeconds() {
         Calendar c = Calendar.getInstance();
@@ -928,10 +879,10 @@ public final class DateUtils {
 
     /**
      * 获取服务器时间的毫秒数
-     * 
-     * @author zhangpingan
-     * @param 无
+     *
+     * @param
      * @return 返回服务器时间的毫秒数
+     * @author zhangpingan
      * @author zhangpingan mrd Beidou2.0.0
      */
     public static long getTimeInMillionSeconds() {
@@ -940,16 +891,14 @@ public final class DateUtils {
     }
 
     /**
-     * @author zhangpingan
      * @param dateString
-     * @param format1
-     *            ，如yyyyMMdd
-     * @param format2
-     *            , 如yyyy/MM/dd
+     * @param format1    ，如yyyyMMdd
+     * @param format2    , 如yyyy/MM/dd
      * @return
+     * @author zhangpingan
      */
     public static String formatDateString(String dateString, String format1,
-            String format2) {
+                                          String format2) {
         if (dateString == null) {
             return null;
         }
@@ -967,7 +916,7 @@ public final class DateUtils {
 
     /**
      * 解析从doris获取的日期
-     * 
+     *
      * @param doirsDate
      * @return
      * @author kanghongwei
@@ -983,7 +932,7 @@ public final class DateUtils {
 
     /**
      * 获取两天之间的所有的日期
-     * 
+     *
      * @param startDate
      * @param endDate
      * @param format
@@ -991,7 +940,7 @@ public final class DateUtils {
      * @author kanghongwei
      */
     public static List<String> getDayListBetween2Day(String startDate,
-            String endDate, Format format) {
+                                                     String endDate, Format format) {
         List<String> dayList = new ArrayList<String>();
         int dataNum = Integer.parseInt(getTwoDay2String(startDate, endDate,
                 format));
@@ -1005,7 +954,7 @@ public final class DateUtils {
 
     /**
      * 指定fotmat,得到二个日期间的间隔天数
-     * 
+     *
      * @param startDate
      * @param endDate
      * @param format
@@ -1013,7 +962,7 @@ public final class DateUtils {
      * @author kanghongwei
      */
     public static String getTwoDay2String(String startDate, String endDate,
-            Format format) {
+                                          Format format) {
         SimpleDateFormat localFormat = (SimpleDateFormat) format;
         long day = 0;
         try {
@@ -1029,7 +978,7 @@ public final class DateUtils {
 
     /**
      * 指定fotmat,得到二个日期间的间隔天数
-     * 
+     *
      * @param startDate
      * @param endDate
      * @param format
@@ -1037,7 +986,7 @@ public final class DateUtils {
      * @author zhangbi
      */
     public static long getTwoDaysBetweenNumber(String startDate,
-            String endDate, Format format) {
+                                               String endDate, Format format) {
         SimpleDateFormat localFormat = (SimpleDateFormat) format;
         long day = 0;
         try {
@@ -1053,7 +1002,7 @@ public final class DateUtils {
 
     /**
      * 将当前时间前移或后移若干天之后的日期(前移则将delay赋负值)
-     * 
+     *
      * @param nowdate
      * @param delay
      * @param format
@@ -1061,7 +1010,7 @@ public final class DateUtils {
      * @author kanghongwei
      */
     public static String getNextDay2String(String nowdate, String delay,
-            Format format) {
+                                           Format format) {
         try {
             SimpleDateFormat localFormat = (SimpleDateFormat) format;
             String mdate = "";
@@ -1078,7 +1027,7 @@ public final class DateUtils {
 
     /**
      * 指定fotmat, 将String转化为util.Date
-     * 
+     *
      * @param strDate
      * @param format
      * @return
@@ -1093,16 +1042,15 @@ public final class DateUtils {
 
     /**
      * 判定一个日期specificDate是否在指定的起止日期startDate，endDate之间
-     * 
+     *
      * @param startDate
      * @param endDate
-     * @param format
      * @param specificDate
      * @return
      * @author kanghongwei
      */
     public static boolean isBetweenDate(Date startDate, Date endDate,
-            Date specificDate) {
+                                        Date specificDate) {
         long startTm = getDateCeil(startDate).getTimeInMillis();
         long endTm = getDateCeil(endDate).getTimeInMillis();
         long specificTm = getDateCeil(specificDate).getTimeInMillis();
@@ -1115,7 +1063,7 @@ public final class DateUtils {
 
     /**
      * 判定一个日期specificDate是否在指定的起止日期startDate，endDate之间
-     * 
+     *
      * @param startDate
      * @param endDate
      * @param format
@@ -1124,7 +1072,7 @@ public final class DateUtils {
      * @author kanghongwei
      */
     public static boolean isBetweenDate(String startDate, String endDate,
-            Format format, String specificDate) {
+                                        Format format, String specificDate) {
         boolean result = false;
         List<String> dateList = getDayListBetween2Day(startDate, endDate,
                 format);
@@ -1149,8 +1097,8 @@ public final class DateUtils {
 
     /**
      * 根据传递的参数格式化日期
-     * 
-     * @param formatString
+     *
+     * @param format
      * @param date
      * @return
      */
@@ -1161,48 +1109,40 @@ public final class DateUtils {
 
     /**
      * 校验两段时间是否有重合
-     * 
-     * @param date1Start
-     *            时间段1开始
-     * @param date1End
-     *            时间段1结束
-     * @param date2Start
-     *            时间段2开始
-     * @param date2End
-     *            时间段2结束
-     * @return <p>
-     *         <code>true</code>:有重合
-     *         <p>
-     *         <code>false</code>:无重合
+     *
+     * @param date1Start 时间段1开始
+     * @param date1End   时间段1结束
+     * @param date2Start 时间段2开始
+     * @param date2End   时间段2结束
+     * @return <p/>
+     * <code>true</code>:有重合
+     * <p/>
+     * <code>false</code>:无重合
      */
     public final static boolean isOverlay(Date date1Start, Date date1End,
-            Date date2Start, Date date2End) {
+                                          Date date2Start, Date date2End) {
         return ((date1Start.getTime() >= date2Start.getTime()) && date1Start
                 .getTime() <= date2End.getTime())
                 || ((date2Start.getTime() >= date1Start.getTime()) && date2Start
-                        .getTime() <= date1End.getTime());
+                .getTime() <= date1End.getTime());
     }
 
     /**
      * 校验两段时间是否有重合
-     * 
-     * @param date1StartStr
-     *            时间段1开始
-     * @param date1EndStr
-     *            时间段1结束
-     * @param date2StartStr
-     *            时间段2开始
-     * @param date2EndStr
-     *            时间段2结束
+     *
+     * @param date1StartStr 时间段1开始
+     * @param date1EndStr   时间段1结束
+     * @param date2StartStr 时间段2开始
+     * @param date2EndStr   时间段2结束
      * @param patten
-     * @return <p>
-     *         <code>true</code>:有重合
-     *         <p>
-     *         <code>false</code>:无重合
+     * @return <p/>
+     * <code>true</code>:有重合
+     * <p/>
+     * <code>false</code>:无重合
      */
     public final static boolean isOverlay(String date1StartStr,
-            String date1EndStr, String date2StartStr, String date2EndStr,
-            String patten) {
+                                          String date1EndStr, String date2StartStr, String date2EndStr,
+                                          String patten) {
         Date date1Start = DateUtils.parseDate(date1StartStr, patten);
         Date date1End = DateUtils.parseDate(date1EndStr, patten);
         Date date2Start = DateUtils.parseDate(date2StartStr, patten);
@@ -1212,15 +1152,13 @@ public final class DateUtils {
 
     /**
      * 不考虑时间求天数差
-     * 
-     * @param startDate
-     *            开始时间
-     * @param endDate
-     *            结束时间
+     *
+     * @param startDate 开始时间
+     * @param endDate   结束时间
      * @return
      */
     public final static long getDaysBetweenIgnoreTime(String startDate,
-            String endDate, Format format) {
+                                                      String endDate, Format format) {
         SimpleDateFormat localFormat = (SimpleDateFormat) format;
         try {
             java.util.Date startDay = localFormat.parse(startDate);
@@ -1233,15 +1171,13 @@ public final class DateUtils {
 
     /**
      * 不考虑时间求天数差
-     * 
-     * @param startDate
-     *            开始时间
-     * @param endDate
-     *            结束时间
+     *
+     * @param startDate 开始时间
+     * @param endDate   结束时间
      * @return
      */
     public final static long getDaysBetweenIgnoreTime(Date startDate,
-            Date endDate) {
+                                                      Date endDate) {
         startDate = getRoundedDay(startDate);
         endDate = getNextDay(endDate);
         return getBetweenDate(startDate, endDate);

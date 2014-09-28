@@ -1,8 +1,6 @@
 package com.github.knightliao.apollo.utils.data;
 
-import java.io.IOException;
-import java.util.Date;
-
+import com.github.knightliao.apollo.utils.time.DateUtils;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.JsonSerializer;
@@ -13,38 +11,19 @@ import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.knightliao.apollo.utils.time.DateUtils;
+import java.io.IOException;
+import java.util.Date;
 
 /**
  * JSON工具类
- * 
+ *
  * @author liaoqiqi
  * @version 2014-8-20
  */
 public final class JsonUtils {
 
-    private JsonUtils() {
-
-    }
-
-    private static final Logger log = LoggerFactory.getLogger(JsonUtils.class);
-
     final static ObjectMapper objectMapper;
-
-    public static final class IosDateTimeJsonSerializer extends
-            JsonSerializer<Date> {
-
-        @Override
-        public void serialize(Date value, JsonGenerator paramJsonGenerator,
-                SerializerProvider provider) throws IOException,
-                JsonProcessingException {
-            if (value != null) {
-                paramJsonGenerator.writeString(DateUtils.ISO_DATETIME_FORMAT
-                        .format(value));
-            }
-        }
-
-    };
+    private static final Logger log = LoggerFactory.getLogger(JsonUtils.class);
 
     static {
         StdSerializerProvider sp = new StdSerializerProvider();
@@ -54,23 +33,27 @@ public final class JsonUtils {
         // SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     }
 
+    private JsonUtils() {
+
+    }
+
+    ;
+
     public static ObjectMapper getObjectMapper() {
         return objectMapper;
     }
 
     /**
      * JSON串转换为Java泛型对象，可以是各种类型，此方法最为强大。用法看测试用例。
-     * 
+     *
      * @param <T>
-     * @param jsonString
-     *            JSON字符串
-     * @param tr
-     *            TypeReference,例如: new TypeReference< List<FamousUser> >(){}
+     * @param jsonString JSON字符串
+     * @param tr         TypeReference,例如: new TypeReference< List<FamousUser> >(){}
      * @return List对象列表
      */
     @SuppressWarnings("unchecked")
     public static <T> T json2GenericObject(String jsonString,
-            TypeReference<T> tr) {
+                                           TypeReference<T> tr) {
 
         if (jsonString == null || "".equals(jsonString)) {
             return null;
@@ -114,6 +97,21 @@ public final class JsonUtils {
 
         }
         return "";
+    }
+
+    public static final class IosDateTimeJsonSerializer extends
+            JsonSerializer<Date> {
+
+        @Override
+        public void serialize(Date value, JsonGenerator paramJsonGenerator,
+                              SerializerProvider provider) throws IOException,
+                JsonProcessingException {
+            if (value != null) {
+                paramJsonGenerator.writeString(DateUtils.ISO_DATETIME_FORMAT
+                        .format(value));
+            }
+        }
+
     }
 
 }

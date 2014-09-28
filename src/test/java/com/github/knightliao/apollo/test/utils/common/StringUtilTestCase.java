@@ -1,16 +1,11 @@
 package com.github.knightliao.apollo.test.utils.common;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
+import com.github.knightliao.apollo.utils.common.StringUtil;
 import org.junit.Test;
 
-import com.github.knightliao.apollo.utils.common.StringUtil;
+import static org.junit.Assert.*;
 
 /**
- * 
  * @author liaoqiqi
  * @version 2014-8-28
  */
@@ -370,24 +365,24 @@ public class StringUtilTestCase {
     @Test
     public void bytesToString() {
         assertEquals("0", StringUtil.bytesToString(null));
-        assertEquals("0", StringUtil.bytesToString(new byte[] {}));
+        assertEquals("0", StringUtil.bytesToString(new byte[]{}));
         assertEquals("0",
-                StringUtil.bytesToString(new byte[] { 0, 0, 0, 0, 0, 0 }));
+                StringUtil.bytesToString(new byte[]{0, 0, 0, 0, 0, 0}));
         assertEquals("1",
-                StringUtil.bytesToString(new byte[] { 0, 0, 0, 0, 0, 1 }));
+                StringUtil.bytesToString(new byte[]{0, 0, 0, 0, 0, 1}));
         assertEquals("GWO823H",
-                StringUtil.bytesToString(new byte[] { 1, 0, 0, 0, 0, 0 }));
+                StringUtil.bytesToString(new byte[]{1, 0, 0, 0, 0, 0}));
         assertEquals("cIx81",
-                StringUtil.bytesToString(new byte[] { 0, 1, 2, 10, 62 }));
+                StringUtil.bytesToString(new byte[]{0, 1, 2, 10, 62}));
         assertEquals(
                 "cIx8QaO8KjH",
-                StringUtil.bytesToString(new byte[] { 0, 1, 2, 10, 62, 0, 1, 2,
-                        10, 62 }));
+                StringUtil.bytesToString(new byte[]{0, 1, 2, 10, 62, 0, 1, 2,
+                        10, 62}));
 
         assertEquals(
                 "IJG2Y0YVRQ5V2",
-                StringUtil.bytesToString(new byte[] { 0, 1, 2, 10, 62, 0, 1, 2,
-                        10, 62 }, true));
+                StringUtil.bytesToString(new byte[]{0, 1, 2, 10, 62, 0, 1, 2,
+                        10, 62}, true));
     }
 
     @Test
