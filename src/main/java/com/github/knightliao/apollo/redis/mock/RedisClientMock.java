@@ -6,13 +6,10 @@ import org.slf4j.LoggerFactory;
 import com.github.knightliao.apollo.redis.RedisClient;
 
 /**
- * @description : RedisClientMock
  * 
- * @author : WuNing
- * @email : Wuning01@baidu.com
- * @date : 2014年3月17日 下午5:20:23
+ * @author knightliao
+ * 
  */
-
 public class RedisClientMock extends RedisClient {
     private static final Logger logger = LoggerFactory.getLogger(RedisClientMock.class);
 

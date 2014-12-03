@@ -1,14 +1,10 @@
-/**
- * adx-common#com.baidu.ub.generic.bo.BaseObject.java
- * 下午6:46:03 created by Darwin(Tianxin)
- */
 package com.github.knightliao.apollo.db.bo;
 
 import java.io.Serializable;
 
 /**
  * 使用GenericDao做映射的对象，必须都继承与这个类
- *
+ * 
  * @author Darwin(Tianxin)
  */
 public class BaseObject<KEY extends Serializable> implements Serializable {

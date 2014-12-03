@@ -1,7 +1,3 @@
-/**
- * beidou-core#com.baidu.beidou.common.utils.FileUtils.java
- * 下午5:26:38 created by Darwin(Tianxin)
- */
 package com.github.knightliao.apollo.utils.io;
 
 import java.io.InputStream;
@@ -11,7 +7,7 @@ import java.io.Writer;
 
 /**
  * 文件操作的方法集
- *
+ * 
  * @author liaoqiqi
  * @version 2014-8-20
  */
@@ -23,7 +19,7 @@ public final class FileUtils {
 
     /**
      * 关闭文件流
-     *
+     * 
      * @param w 上午10:27:27 created by Darwin(Tianxin)
      */
     public final static void closeWriter(Writer w) {
@@ -36,7 +32,7 @@ public final class FileUtils {
 
     /**
      * 关闭文件流
-     *
+     * 
      * @param r 上午10:27:27 created by Darwin(Tianxin)
      */
     public final static void closeReader(Reader r) {
@@ -49,7 +45,7 @@ public final class FileUtils {
 
     /**
      * 关闭文件流
-     *
+     * 
      * @param os 上午10:27:27 created by Darwin(Tianxin)
      */
     public final static void closeOutputStream(OutputStream os) {
@@ -62,7 +58,7 @@ public final class FileUtils {
 
     /**
      * 关闭文件流
-     *
+     * 
      * @param is 上午10:27:27 created by Darwin(Tianxin)
      */
     public final static void closeInputStream(InputStream is) {

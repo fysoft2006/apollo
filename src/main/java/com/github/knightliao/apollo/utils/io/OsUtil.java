@@ -1,13 +1,13 @@
 package com.github.knightliao.apollo.utils.io;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 
+import org.apache.commons.io.FileUtils;
+
 /**
- * @author liaoqiqi
- * @@Description: useful for dir operation
- * @email liaoqiqi@baidu.com
+ * 
+ * @author knightliao
+ * 
  */
 public final class OsUtil {
 
@@ -17,7 +17,7 @@ public final class OsUtil {
 
     /**
      * 建多层目录
-     *
+     * 
      * @param filePath
      * @return boolean
      * @throws
@@ -40,8 +40,7 @@ public final class OsUtil {
      * @author liaoqiqi
      * @date 2013-6-13
      */
-    public static boolean isFileExist(final String filePathString)
-            throws Exception {
+    public static boolean isFileExist(final String filePathString) throws Exception {
 
         File f = new File(filePathString);
         return f.exists();
@@ -55,7 +54,7 @@ public final class OsUtil {
      * @author liaoqiqi
      * @date 2013-6-13
      */
-    public static String pathJoin(final String... pathElements) {
+    public static String pathJoin(final String...pathElements) {
 
         final String path;
 
