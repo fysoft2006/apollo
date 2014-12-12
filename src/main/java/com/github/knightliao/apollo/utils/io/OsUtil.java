@@ -1,8 +1,14 @@
 package com.github.knightliao.apollo.utils.io;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 
-import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -10,6 +16,8 @@ import org.apache.commons.io.FileUtils;
  * 
  */
 public final class OsUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(OsUtil.class);
 
     private OsUtil() {
 
@@ -119,5 +127,84 @@ public final class OsUtil {
 
         // 转移临时下载文件至下载文件夹
         FileUtils.copyFile(src, dest);
+    }
+
+    /**
+     * @param src
+     * @param dest
+     * @return void
+     * @Description: 具有重试机制的 ATOM 转移文件 ，并且会校验文件是否一致 才替换
+     * @author liaoqiqi
+     * @date 2013-6-20
+     */
+    public static void transferFileAtom(File src, File dest) throws Exception {
+
+        // 文件锁所在文件
+        File lockFile = new File(dest + ".lock");
+        FileOutputStream outStream = null;
+        FileLock lock = null;
+
+        try {
+            outStream = new FileOutputStream(lockFile);
+            FileChannel channel = outStream.getChannel();
+            try {
+
+                int tryTime = 0;
+                while (tryTime < 3) {
+
+                    lock = channel.tryLock();
+                    if (lock != null) {
+
+                        if (dest.exists()) {
+                            // 判断内容是否一样
+                            if (!FileUtils.isFileUpdate(src, dest)) {
+                                break;
+                            }
+                        }
+
+                        logger.debug("start to replace " + src.getAbsolutePath() + " to " + dest.getAbsolutePath());
+
+                        // 转移
+                        transferFile(src, dest);
+
+                        // 删除
+                        src.delete();
+
+                        break;
+                    }
+
+                    logger.warn("try lock failed. sleep and try " + tryTime);
+                    tryTime++;
+
+                    try {
+                        Thread.sleep(1000 * tryTime);
+                    } catch (Exception e) {
+                    }
+                }
+
+            } catch (IOException e) {
+                logger.warn(e.toString());
+            }
+
+        } catch (FileNotFoundException e) {
+            logger.warn(e.toString());
+
+        } finally {
+
+            if (null != lock) {
+                try {
+                    lock.release();
+                } catch (IOException e) {
+                    logger.warn(e.toString());
+                }
+            }
+            if (outStream != null) {
+                try {
+                    outStream.close();
+                } catch (IOException e) {
+                    logger.warn(e.toString());
+                }
+            }
+        }
     }
 }
