@@ -1,16 +1,14 @@
 package com.github.knightliao.apollo.utils.io;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 文件操作的方法集
@@ -19,6 +17,8 @@ import org.apache.commons.codec.digest.DigestUtils;
  * @version 2014-8-20
  */
 public final class FileUtils extends org.apache.commons.io.FileUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
     private FileUtils() {
 
@@ -86,40 +86,29 @@ public final class FileUtils extends org.apache.commons.io.FileUtils {
      */
     public static boolean isFileUpdate(String oldName, String newName) {
 
-        return isFileUpdate(new File(oldName), new File(newName));
+        return isFileEqual(new File(oldName), new File(newName));
     }
 
     /**
-     * 使用jar包：commons-codec-1.4.jar的md5比较方法 <br/>
      * http://blog.csdn.net/very365_1208/article/details/8824033
+     * http://www.avajava.com/tutorials/lessons/whats-a-quick-way
+     * -to-tell-if-the-contents-of-two-files-are-identical-or-not.html
      * 
      * @param oldName
      * @param newName
      * @return
      */
-    public static boolean isFileUpdate(File oldFile, File newFile) {
-
-        String oldFileMd5 = null;
-        String newFileMd5 = null;
+    public static boolean isFileEqual(File oldFile, File newFile) {
 
         try {
 
-            oldFileMd5 = new String(Hex.encodeHex(DigestUtils.md5(new FileInputStream(oldFile))));
-            newFileMd5 = new String(Hex.encodeHex(DigestUtils.md5(new FileInputStream(newFile))));
-
-        } catch (FileNotFoundException e) {
-
-            e.printStackTrace();
+            return contentEquals(oldFile, newFile);
 
         } catch (IOException e) {
 
-            e.printStackTrace();
-        }
-
-        if (oldFileMd5 == null || newFileMd5 == null) {
+            logger.warn(e.toString());
             return false;
         }
 
-        return (!oldFileMd5.equals(newFileMd5));
     }
 }

@@ -157,7 +157,7 @@ public final class OsUtil {
 
                         if (dest.exists()) {
                             // 判断内容是否一样
-                            if (!FileUtils.isFileUpdate(src, dest)) {
+                            if (FileUtils.isFileEqual(src, dest)) {
                                 break;
                             }
                         }
