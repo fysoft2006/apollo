@@ -6,6 +6,10 @@
     <artifactId>apollo</artifactId>
     <packaging>jar</packaging>
 
+    <version>1.0.5</version>
+    <groupId>com.github.knightliao.apollo</groupId>
+    <description>https://github.com/knightliao/apollo</description>
+
     <licenses>
         <license>
             <name>Apache 2</name>
@@ -389,6 +393,7 @@
                             <exclude>**/*Form.class</exclude>
                         </excludes>
                     </instrumentation>
+                    <check/>
                 </configuration>
             </plugin>
 
@@ -473,9 +478,7 @@
             </build>
         </profile>
     </profiles>
-    <version>1.0.5-SNAPSHOT</version>
-    <groupId>com.github.knightliao.apollo</groupId>
-    <description>https://github.com/knightliao/apollo</description>
+
 
     <developers>
         <developer>

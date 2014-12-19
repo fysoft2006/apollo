@@ -1,4 +1,7 @@
-package com.github.knightliao.apollo.redis;
+/*
+ * Copyright (C) 2014 Baidu, Inc. All Rights Reserved.
+ */
+package com.baidu.unbiz.redis;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,35 +20,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.CollectionUtils;
+
+import com.baidu.unbiz.redis.config.RedisHAClientConfig;
+import com.baidu.unbiz.redis.util.JsonUtils;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Protocol;
 import redis.clients.util.SafeEncoder;
 
-import com.github.knightliao.apollo.utils.data.JsonUtils;
-
 /**
- * ClassName: RedisConnection <br>
- * 
- * Function: 封装Jedis API，提供redis调用的操作
- * 
+ * 封装Jedis API，提供redis命令调用的操作
+ *
  * @author Zhang Xu
  */
-public class RedisClient implements RedisOperation, InitializingBean, DisposableBean {
+public class RedisClient implements RedisOperation {
 
-    protected final static Logger LOG = LoggerFactory.getLogger(RedisClient.class);
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String cacheName = "default";
 
@@ -56,6 +55,8 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
     private String redisAuthKey;
 
     private JedisPool jedisPool;
+
+    private boolean isAlive = true;
 
     private int timeout = Protocol.DEFAULT_TIMEOUT;
 
@@ -83,20 +84,35 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
 
     private boolean lifo = GenericObjectPool.DEFAULT_LIFO;
 
-    /**
-     * If the pool in ObjectPool is exhausted (no available idle instances and no capacity to create new ones), this
-     * method will either block (WHEN_EXHAUSTED_BLOCK == 1), throw a NoSuchElementException (WHEN_EXHAUSTED_FAIL == 0),
-     * or grow (WHEN_EXHAUSTED_GROW == 2 - ignoring maxActive). The length of time that this method will block when
-     * whenExhaustedAction == WHEN_EXHAUSTED_BLOCK is determined by the maxWait property.
-     */
     private byte whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_BLOCK;
 
     /**
-     * init the JedisPoolObjectFactory and ObjectPool
+     * Creates a new instance of RedisClient.
      */
-    // @PostConstruct
-    public void afterPropertiesSet() {
+    public RedisClient(RedisHAClientConfig clientConfig) {
+        if (clientConfig == null) {
+            throw new IllegalArgumentException("Client config is null");
+        }
+        this.cacheName = clientConfig.getCacheName();
+        this.redisServerHost = clientConfig.getRedisServerHost();
+        this.redisServerPort = clientConfig.getRedisServerPort();
+        this.timeout = clientConfig.getTimeout();
+        this.redisAuthKey = clientConfig.getRedisAuthKey();
+        if (StringUtils.isEmpty(redisAuthKey)) {
+            logger.info("use no auth mode for " + redisServerHost);
+            jedisPool = new JedisPool(getPoolConfig(), redisServerHost, redisServerPort, timeout);
+        } else {
+            jedisPool = new JedisPool(getPoolConfig(), redisServerHost, redisServerPort, timeout, redisAuthKey);
+        }
+        onAfterInit(redisServerHost, redisServerPort);
+    }
 
+    protected void onAfterInit(String host, int port) {
+        logger.info("New Jedis pool <client: " + cacheName + "> <server: " + this.getLiteralRedisServer() +
+                        "> object created. Connection pool will be initiated when calling.");
+    }
+
+    private GenericObjectPool.Config getPoolConfig() {
         GenericObjectPool.Config poolConfig = new GenericObjectPool.Config();
         // maxIdle为负数时，不对pool size大小做限制，此处做限制，防止保持过多空闲redis连接
         if (this.maxIdle >= 0) {
@@ -116,33 +132,83 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         poolConfig.minEvictableIdleTimeMillis = this.minEvictableIdleTimeMillis;
         poolConfig.softMinEvictableIdleTimeMillis = this.softMinEvictableIdleTimeMillis;
         poolConfig.lifo = this.lifo;
+        return poolConfig;
+    }
 
-        if (StringUtils.isEmpty(redisAuthKey)) {
-
-            LOG.info("use no auth mode for " + redisServerHost);
-            jedisPool = new JedisPool(poolConfig, redisServerHost, redisServerPort, timeout);
-        } else {
-            jedisPool = new JedisPool(poolConfig, redisServerHost, redisServerPort, timeout, redisAuthKey);
+    public String ping() {
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            String pong = jedis.ping();
+            return pong;
+        } catch (Exception e) {
+            logger.debug(e.getMessage());
+            this.jedisPool.returnBrokenResource(jedis);
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
         }
-
-        onAfterInit(redisServerHost, redisServerPort);
+        return StringUtils.EMPTY;
     }
 
-    protected void onAfterInit(String host, int port) {
-        LOG.info("New Jedis pool <client: " + this.getCacheName() + "> <server: " + this.getRedisServer()
-                + "> object created.");
-    }
+    /**
+     * get old value and set new value
+     *
+     * @param key
+     * @param value
+     * @param expiration
+     *
+     * @return false if redis did not execute the option
+     *
+     * @throws Exception
+     * @author wangchongjie
+     */
+    public Object getSet(String key, Object value, Integer expiration) throws Exception {
+        Jedis jedis = null;
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+        try {
+
+            jedis = this.jedisPool.getResource();
+            long begin = System.currentTimeMillis();
+            // 操作expire成功返回1，失败返回0，仅当均返回1时，实际操作成功
+            byte[] val = jedis.getSet(SafeEncoder.encode(key), serialize(value));
+            Object result = deserialize(val);
+
+            boolean success = true;
+            if (expiration > 0) {
+                Long res = jedis.expire(key, expiration);
+                if (res == 0L) {
+                    success = false;
+                }
+            }
+            long end = System.currentTimeMillis();
+            if (success) {
+                logger.info("getset key:" + key + ", spends: " + (end - begin) + "ms");
+            } else {
+                logger.info("getset key: " + key + " failed, key has already exists! ");
+            }
+
+            return result;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
     }
 
     /**
      * get value<br>
      * return null if key did not exist
-     * 
+     *
      * @param key
+     *
      * @return
+     *
      * @throws Exception
      */
     public Object get(String key) throws Exception {
@@ -153,7 +219,7 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
             long begin = System.currentTimeMillis();
             data = jedis.get(SafeEncoder.encode(key));
             long end = System.currentTimeMillis();
-            LOG.info("getValueFromCache " + key + " ,spends: " + (end - begin) + " millionseconds.");
+            logger.info("get key:" + key + ", spends: " + (end - begin) + "ms");
         } catch (Exception e) {
             // do jedis.quit() and jedis.disconnect()
             this.jedisPool.returnBrokenResource(jedis);
@@ -170,10 +236,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
     /**
      * value set<br>
      * The string can't be longer than 1073741824 bytes (1 GB).
-     * 
+     *
      * @param key
      * @param value
-     * @param expiration 超时时间
+     * @param expiration
+     *
      * @return false if redis did not execute the option
      */
     public boolean set(String key, Object value, Integer expiration) throws Exception {
@@ -189,10 +256,10 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
                 result = jedis.set(SafeEncoder.encode(key), serialize(value));
             }
             long end = System.currentTimeMillis();
-            LOG.info("set key:" + key + " spends: " + (end - begin) + " millionseconds.");
+            logger.info("set key:" + key + ", spends: " + (end - begin) + "ms");
             return "OK".equalsIgnoreCase(result);
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -205,10 +272,12 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
 
     /**
      * set a value without expiration
-     * 
+     *
      * @param key
      * @param value
+     *
      * @return false if redis did not execute the option
+     *
      * @throws Exception
      */
     public boolean set(String key, Object value) throws Exception {
@@ -217,11 +286,13 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
 
     /**
      * add if not exists
-     * 
+     *
      * @param key
      * @param value
      * @param expiration
+     *
      * @return false if redis did not execute the option
+     *
      * @throws Exception
      */
     public boolean add(String key, Object value, Integer expiration) throws Exception {
@@ -238,14 +309,14 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
             }
             long end = System.currentTimeMillis();
             if (result == 1L) {
-                LOG.info("add key:" + key + " spends: " + (end - begin) + " millionseconds.");
+                logger.info("add key:" + key + ", spends: " + (end - begin) + "ms");
             } else {
-                LOG.info("add key: " + key + " failed, key has already exists! ");
+                logger.info("add key: " + key + " failed, key has already exists! ");
             }
 
             return result == 1L;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -257,10 +328,12 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
 
     /**
      * add if not exists
-     * 
+     *
      * @param key
      * @param value
+     *
      * @return false if redis did not execute the option
+     *
      * @throws Exception
      */
     public boolean add(String key, Object value) throws Exception {
@@ -269,9 +342,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
 
     /**
      * Test if the specified key exists.
-     * 
+     *
      * @param key
+     *
      * @return
+     *
      * @throws Exception
      */
     public boolean exists(String key) throws Exception {
@@ -282,7 +357,7 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
             isExist = jedis.exists(SafeEncoder.encode(key));
 
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -295,8 +370,9 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
 
     /**
      * Remove the specified keys.
-     * 
+     *
      * @param key
+     *
      * @return false if redis did not execute the option
      */
     public boolean delete(String key) {
@@ -304,11 +380,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             jedis.del(SafeEncoder.encode(key));
-            LOG.info("delete key:" + key);
+            logger.info("delete key:" + key);
 
             return true;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
         } finally {
             if (jedis != null) {
@@ -320,8 +396,9 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
 
     /**
      * Remove the specified keys.
-     * 
+     *
      * @param key
+     *
      * @return false if redis did not execute the option
      */
     public boolean expire(String key, int seconds) {
@@ -329,11 +406,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             jedis.expire(SafeEncoder.encode(key), seconds);
-            LOG.info("expire key:" + key + " time after " + seconds + " seconds.");
+            logger.info("expire key:" + key + " time after " + seconds + " seconds.");
 
             return true;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
         } finally {
             if (jedis != null) {
@@ -345,7 +422,7 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
 
     /**
      * Delete all the keys of all the existing databases, not just the currently selected one.
-     * 
+     *
      * @return false if redis did not execute the option
      */
     public boolean flushall() {
@@ -354,10 +431,10 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             result = jedis.flushAll();
-            LOG.info("redis client name: " + this.getCacheName() + " flushall.");
+            logger.info("redis client name: " + this.getCacheName() + " flushall.");
 
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
         } finally {
             if (jedis != null) {
@@ -370,9 +447,8 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
     public void shutdown() {
         try {
             this.jedisPool.destroy();
-
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -412,40 +488,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
                 bis.close();
             }
         } catch (IOException e) {
-            LOG.warn("Caught IOException decoding %d bytes of data", e);
+            logger.warn("Caught IOException decoding %d bytes of data", e);
         } catch (ClassNotFoundException e) {
-            LOG.warn("Caught CNFE decoding %d bytes of data", e);
+            logger.warn("Caught CNFE decoding %d bytes of data", e);
         }
         return rv;
-    }
-
-    /**
-     * Get the bytes representing the given serialized object.
-     */
-    protected byte[] jsonSerialize(Object o) {
-        byte[] res = null;
-        try {
-            res = JsonUtils.toJson(o).getBytes("utf-8");
-        } catch (UnsupportedEncodingException e) {
-            LOG.error("JsonSerialize object fail ", e);
-        }
-        return res;
-    }
-
-    /**
-     * Get the object represented by the given serialized bytes.
-     */
-    protected Object jsonDeserialize(byte[] in, Class<?> cls) {
-        if (in == null || in.length == 0) {
-            return null;
-        }
-        Object res = null;
-        try {
-            res = JsonUtils.json2Object(new String(in, "utf-8"), cls);
-        } catch (UnsupportedEncodingException e) {
-            LOG.error("DeSerialize object fail ", e);
-        }
-        return res;
     }
 
     public void hput(String key, String field, Serializable fieldValue) throws Exception {
@@ -453,9 +500,9 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             jedis.hset(SafeEncoder.encode(key), SafeEncoder.encode(field), serialize(fieldValue));
-            LOG.info("hset key:" + key + " field:" + field);
+            logger.info("hset key:" + key + " field:" + field);
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -470,11 +517,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             byte[] value = jedis.hget(SafeEncoder.encode(key), SafeEncoder.encode(field));
-            LOG.info("hget key:" + key + " field:" + field);
+            logger.info("hget key:" + key + " field:" + field);
 
             return deserialize(value);
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
         } finally {
             if (jedis != null) {
@@ -489,11 +536,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             long value = jedis.hdel(SafeEncoder.encode(key), SafeEncoder.encode(field));
-            LOG.info("hget key:" + key + " field:" + field);
+            logger.info("hget key:" + key + ", field:" + field);
 
             return value == 1;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -508,7 +555,7 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             Set<byte[]> hkeys = jedis.hkeys(SafeEncoder.encode(key));
-            LOG.info("hkeys key:" + key);
+            logger.info("hkeys key:" + key);
             if (CollectionUtils.isEmpty(hkeys)) {
                 return new HashSet<String>(1);
             } else {
@@ -519,7 +566,7 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
                 return keys;
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -534,7 +581,7 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             List<byte[]> hvals = jedis.hvals(SafeEncoder.encode(key));
-            LOG.info("hvals key:" + key);
+            logger.info("hvals key:" + key);
             if (CollectionUtils.isEmpty(hvals)) {
                 return new ArrayList<Object>(1);
             } else {
@@ -545,7 +592,7 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
                 return ret;
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -560,11 +607,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             boolean ret = jedis.hexists(SafeEncoder.encode(key), SafeEncoder.encode(field));
-            LOG.info("hexists key:" + key + " field:" + field);
+            logger.info("hexists key:" + key + ", field:" + field);
 
             return ret;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -579,11 +626,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             long ret = jedis.hlen(SafeEncoder.encode(key));
-            LOG.info("hlen key:" + key);
+            logger.info("hlen key:" + key);
 
             return ret;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -613,11 +660,11 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             Map<byte[], byte[]> hgetAll = jedis.hgetAll(SafeEncoder.encode(key));
-            LOG.info("hgetAll key:" + key);
+            logger.info("hgetAll key:" + key);
 
             return decodeMap(hgetAll);
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -647,9 +694,9 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         try {
             jedis = this.jedisPool.getResource();
             jedis.hmset(SafeEncoder.encode(key), encodeMap(values));
-            LOG.info("hmSet key:" + key + " field:" + values.keySet());
+            logger.info("hmSet key:" + key + ", field:" + values.keySet());
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -671,12 +718,12 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         return list.toArray(new byte[len][0]);
     }
 
-    public List<Object> hmGet(String key, String...fields) throws Exception {
+    public List<Object> hmGet(String key, String... fields) throws Exception {
         Jedis jedis = null;
         try {
             jedis = this.jedisPool.getResource();
             List<byte[]> hmget = jedis.hmget(SafeEncoder.encode(key), encodeArray(fields));
-            LOG.info("hmGet key:" + key + " fields:" + Arrays.toString(fields));
+            logger.info("hmGet key:" + key + ", fields:" + Arrays.toString(fields));
             if (CollectionUtils.isEmpty(hmget)) {
                 return new ArrayList<Object>(1);
             } else {
@@ -687,7 +734,7 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
                 return ret;
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -697,19 +744,19 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         }
     }
 
-    public List<String> hmGetByStringSerializer(String key, String...fields) throws Exception {
+    public List<String> hmGetByStringSerializer(String key, String... fields) throws Exception {
         Jedis jedis = null;
         try {
             jedis = this.jedisPool.getResource();
             List<String> hmget = jedis.hmget(key, fields);
-            LOG.info("hmGet key:" + key + " fields:" + Arrays.toString(fields));
+            logger.info("hmGet key:" + key + ", fields:" + Arrays.toString(fields));
             if (CollectionUtils.isEmpty(hmget)) {
                 return new ArrayList<String>(1);
             } else {
                 return hmget;
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             this.jedisPool.returnBrokenResource(jedis);
             throw e;
         } finally {
@@ -717,6 +764,269 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
                 this.jedisPool.returnResource(jedis);
             }
         }
+    }
+
+    public void hmSetByStringSerializer(String key, Map<String, String> values) throws Exception {
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            if (MapUtils.isEmpty(values)) {
+                values = Collections.emptyMap();
+            }
+            jedis.hmset(key, values);
+            // LOG.info("hmSet key:" + key + " field:" + values.keySet());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+    }
+
+    public boolean sAdd(String key, String member) throws Exception {
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            Long r = jedis.sadd(key, member);
+            return r == 1;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+    }
+
+    public boolean sRem(String key, String member) throws Exception {
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            Long r = jedis.srem(key, member);
+            return r == 1;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+    }
+
+    public Set<String> sMembers(String key) throws Exception {
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            Set<String> out = jedis.smembers(key);
+
+            return out;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+    }
+
+    public boolean lpush(String key, Object value) throws Exception {
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+
+            // long begin = System.currentTimeMillis();
+            jedis.lpush(SafeEncoder.encode(key), jsonSerialize(value));
+            // long end = System.currentTimeMillis();
+            // LOG.info("lpush key:" + key + " spends: " + (end - begin) + " millionseconds.");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+        return true;
+    }
+
+    public Object lpop(String key, Class<?> cls) throws Exception {
+        byte[] data = null;
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            // long begin = System.currentTimeMillis();
+            data = jedis.lpop(SafeEncoder.encode(key));
+            // long end = System.currentTimeMillis();
+            // LOG.info("getValueFromCache spends: " + (end - begin) + " millionseconds.");
+        } catch (Exception e) {
+            // do jedis.quit() and jedis.disconnect()
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+
+        return this.jsonDeserialize(data, cls);
+    }
+
+    public boolean rpush(String key, Object value) throws Exception {
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+
+            // long begin = System.currentTimeMillis();
+            jedis.rpush(SafeEncoder.encode(key), jsonSerialize(value));
+            // long end = System.currentTimeMillis();
+            // LOG.info("rpush key:" + key + " spends: " + (end - begin) + " millionseconds.");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+        return true;
+    }
+
+    public Object rpop(String key, Class<?> cls) throws Exception {
+        byte[] data = null;
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            // long begin = System.currentTimeMillis();
+            data = jedis.rpop(SafeEncoder.encode(key));
+            // long end = System.currentTimeMillis();
+            // LOG.info("getValueFromCache spends: " + (end - begin) + " millionseconds.");
+        } catch (Exception e) {
+            // do jedis.quit() and jedis.disconnect()
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+
+        return this.jsonDeserialize(data, cls);
+    }
+
+    public Long incr(String key) throws Exception {
+        Long data = null;
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            // long begin = System.currentTimeMillis();
+            data = jedis.incr(SafeEncoder.encode(key));
+            // long end = System.currentTimeMillis();
+            // LOG.info("getValueFromCache spends: " + (end - begin) + " millionseconds.");
+        } catch (Exception e) {
+            // do jedis.quit() and jedis.disconnect()
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+
+        return data;
+    }
+
+    public Long incrBy(final String key, final long integer) throws Exception {
+        Long data = null;
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            // long begin = System.currentTimeMillis();
+            data = jedis.incrBy(key, integer);
+            // long end = System.currentTimeMillis();
+            // LOG.info("getValueFromCache spends: " + (end - begin) + " millionseconds.");
+        } catch (Exception e) {
+            // do jedis.quit() and jedis.disconnect()
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+
+        return data;
+    }
+
+    /**
+     * Set key to hold string value if key does not exist. In that case, it is equal to SET.
+     * When key already holds a value, no operation is performed. SETNX is short for "SET if N ot e X ists".
+     *
+     * @param key        Key to be operated.
+     * @param value      Value to be set.
+     * @param expiration Expiration time
+     *
+     * @return 1 if the key was set, 0 if hte key was not set.
+     *
+     * @throws Exception if execute failed.
+     * @see <a href="http://redis.io/commands/setnx">Redis: SETNX</a>
+     */
+    public Long setnx(String key, Object value, int expiration) throws Exception {
+        Long result = 0L;
+        Jedis jedis = null;
+        try {
+            jedis = this.jedisPool.getResource();
+            result = jedis.setnx(SafeEncoder.encode(key), serialize(value));
+            jedis.expire(SafeEncoder.encode(key), expiration);
+            return result;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            this.jedisPool.returnBrokenResource(jedis);
+            throw e;
+        } finally {
+            if (jedis != null) {
+                this.jedisPool.returnResource(jedis);
+            }
+        }
+    }
+
+    /**
+     * Get the bytes representing the given serialized object.
+     */
+    protected byte[] jsonSerialize(Object o) {
+        byte[] res = null;
+        try {
+            res = JsonUtils.toJson(o).getBytes("utf-8");
+        } catch (UnsupportedEncodingException e) {
+            logger.error("JsonSerialize object fail ", e);
+        }
+        return res;
+    }
+
+    /**
+     * Get the object represented by the given serialized bytes.
+     */
+    protected Object jsonDeserialize(byte[] in, Class<?> cls) {
+        if (in == null || in.length == 0) {
+            return null;
+        }
+        Object res = null;
+        try {
+            res = JsonUtils.json2Object(new String(in, "utf-8"), cls);
+        } catch (UnsupportedEncodingException e) {
+            logger.error("DeSerialize object fail ", e);
+        }
+        return res;
     }
 
     public void destroy() throws Exception {
@@ -920,257 +1230,24 @@ public class RedisClient implements RedisOperation, InitializingBean, Disposable
         this.lifo = lifo;
     }
 
-    public String getRedisServer() {
+    public String getLiteralRedisServer() {
         return redisServerHost + ":" + redisServerPort;
     }
 
-    public static void main(String[] args) throws Exception {
-
-        final RedisClient client = new RedisClient();
-        client.setRedisServerHost("10.81.31.95");
-        client.setRedisServerPort(16379);
-        // client.setRedisAuthKey("123456");
-        client.afterPropertiesSet();
-        client.flushall();
-
-        // test hash set
-        String key = "SessionKey";
-        client.hput(key, "F", "100");
-        Object value = client.hget(key, "F");
-        if ("100".equals(value)) {
-            System.out.println("hput ok");
-            System.out.println("hget ok");
-        }
-        // test hdel, hexist
-        boolean exist = client.hExists(key, "F");
-        if (exist) {
-            System.out.println("hexist ok");
-        }
-
-        client.hdel(key, "F");
-        exist = client.hExists(key, "F");
-        if (!exist) {
-            System.out.println("hdel ok");
-            System.out.println("hexist ok");
-        }
-
-        // test expire
-
-        client.hput(key, "B", "10000");
-        client.expire(key, 1);
-        exist = client.hExists(key, "B");
-        if (exist) {
-            System.out.println("hexist ok");
-        }
-
-        try {
-            Thread.sleep(1500);
-        } catch (Exception e) {
-        }
-        exist = client.hExists(key, "B");
-        if (!exist) {
-            System.out.println("expire ok");
-        }
-
-        /**
-         * test set
-         */
-        System.out.println("test method set:");
-        System.out.println("client.set(\"mykey\", \"value\"): " + client.set("mykey", "value"));
-        System.out.println("client.get(\"mykey\"): " + client.get("mykey"));
-        System.out.println("client.set(\"mykey\", \"valuemodified\"): " + client.set("mykey", "valuemodified"));
-        System.out.println("client.get(\"mykey\"): " + client.get("mykey"));
-
-        /**
-         * test null value
-         */
-        System.out.println("test value is null:");
-        System.out.println("client.set(\"nullkey\", null): " + client.set("nullkey", null));
-        System.out.println("client.get(\"nullkey\"): " + client.get("nullkey"));
-        System.out.println("client.exists(\"nullkey\"): " + client.exists("nullkey"));
-
-        /**
-         * test add
-         */
-        System.out.println("test method add:");
-        System.out.println("client.add(\"mykeyadd\", \"value\"): " + client.add("mykeyadd", "value"));
-        System.out.println("client.get(\"mykeyadd\"): " + client.get("mykeyadd"));
-        System.out.println("client.add(\"mykeyadd\", \"valuemodified\"): " + client.add("mykeyadd", "valuemodified"));
-        System.out.println("client.get(\"mykeyadd\"): " + client.get("mykeyadd"));
-
-        /**
-         * test exists
-         */
-        System.out.println("test method exists:");
-        System.out.println("client.exists(\"mykey\") " + client.exists("mykey"));
-        System.out.println("client.exists(\"mykeynotexist\"): " + client.exists("mykeynotexist"));
-
-        System.out.println("test string about \"nil\":");
-        System.out.println("client.set(\"nilkey\", \"nil\"): " + client.set("nilkey", "nil"));
-        System.out.println("client.get(\"nilkey\"): " + client.get("nilkey"));
-        System.out.println("get a key not exist(return \"nil\" from redis): " + client.get("nilkey2"));
-
-        /**
-         * test set list
-         */
-        System.out.println("test set List:");
-        List<String> alist = new ArrayList<String>();
-        alist.add("a");
-        alist.add("b");
-        alist.add("c");
-        System.out.println("set list: " + client.set("listkey", alist));
-        Object o = client.get("listkey");
-        System.out.println("get list: " + o);
-
-        /**
-         * test set Set
-         */
-        System.out.println("test set Set:");
-        Set<String> emptySet = new HashSet<String>();
-        System.out.println("set a empty HashSet: " + client.set("emptysetkey", emptySet));
-        Object emptySetO = client.get("emptysetkey");
-        System.out.println("get a empty HashSet: " + emptySetO);
-
-        Set<String> set = new HashSet<String>();
-        set.add("a");
-        set.add("b");
-        set.add("c");
-        System.out.println("set a HashSet: " + client.set("setkey", set));
-        Object setO = client.get("setkey");
-        System.out.println("get a HashSet: " + setO);
-
-        /**
-         * test concurrent
-         */
-        System.out.println("test concurrent: ");
-        final CountDownLatch concurrent = new CountDownLatch(1);
-        for (int i = 0; i < 5000; i++) {
-            final int j = i;
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        System.out.println("Thread " + j + " ok!");
-                        concurrent.await();
-                        System.out.println("client.set(\"testConCurrent" + j + ",testConCurrent" + j + "\"): "
-                                + client.set("testConCurrent" + j, "testConCurrent" + j));
-                        System.out.println("client.get(\"testConCurrent" + j + ")" + client.get("testConCurrent" + j));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-        }
-        concurrent.countDown();
-
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 
-    @Override
-    public boolean lpush(String key, Object value) throws Exception {
-        Jedis jedis = null;
-        try {
-            jedis = this.jedisPool.getResource();
-
-            long begin = System.currentTimeMillis();
-            jedis.lpush(SafeEncoder.encode(key), jsonSerialize(value));
-            long end = System.currentTimeMillis();
-            LOG.info("lpush key:" + key + " spends: " + (end - begin) + " millionseconds.");
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-            this.jedisPool.returnBrokenResource(jedis);
-            throw e;
-        } finally {
-            if (jedis != null) {
-                this.jedisPool.returnResource(jedis);
-            }
-        }
-        return true;
+    public boolean isAlive() {
+        return isAlive;
     }
 
-    public Object lpop(String key, Class<?> cls) throws Exception {
-        byte[] data = null;
-        Jedis jedis = null;
-        try {
-            jedis = this.jedisPool.getResource();
-            long begin = System.currentTimeMillis();
-            data = jedis.lpop(SafeEncoder.encode(key));
-            long end = System.currentTimeMillis();
-            LOG.info("getValueFromCache spends: " + (end - begin) + " millionseconds.");
-        } catch (Exception e) {
-            // do jedis.quit() and jedis.disconnect()
-            this.jedisPool.returnBrokenResource(jedis);
-            throw e;
-        } finally {
-            if (jedis != null) {
-                this.jedisPool.returnResource(jedis);
-            }
-        }
-
-        return this.jsonDeserialize(data, cls);
+    public void setAlive(boolean isAlive) {
+        this.isAlive = isAlive;
     }
 
-    public boolean rpush(String key, Object value) throws Exception {
-        Jedis jedis = null;
-        try {
-            jedis = this.jedisPool.getResource();
-
-            long begin = System.currentTimeMillis();
-            jedis.rpush(SafeEncoder.encode(key), jsonSerialize(value));
-            long end = System.currentTimeMillis();
-            LOG.info("rpush key:" + key + " spends: " + (end - begin) + " millionseconds.");
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-            this.jedisPool.returnBrokenResource(jedis);
-            throw e;
-        } finally {
-            if (jedis != null) {
-                this.jedisPool.returnResource(jedis);
-            }
-        }
-        return true;
-    }
-
-    public Object rpop(String key, Class<?> cls) throws Exception {
-        byte[] data = null;
-        Jedis jedis = null;
-        try {
-            jedis = this.jedisPool.getResource();
-            long begin = System.currentTimeMillis();
-            data = jedis.rpop(SafeEncoder.encode(key));
-            long end = System.currentTimeMillis();
-            LOG.info("getValueFromCache spends: " + (end - begin) + " millionseconds.");
-        } catch (Exception e) {
-            // do jedis.quit() and jedis.disconnect()
-            this.jedisPool.returnBrokenResource(jedis);
-            throw e;
-        } finally {
-            if (jedis != null) {
-                this.jedisPool.returnResource(jedis);
-            }
-        }
-
-        return this.jsonDeserialize(data, cls);
-    }
-
-    public Long incr(String key) throws Exception {
-        Long data = null;
-        Jedis jedis = null;
-        try {
-            jedis = this.jedisPool.getResource();
-            long begin = System.currentTimeMillis();
-            data = jedis.incr(SafeEncoder.encode(key));
-            long end = System.currentTimeMillis();
-            LOG.info("getValueFromCache spends: " + (end - begin) + " millionseconds.");
-        } catch (Exception e) {
-            // do jedis.quit() and jedis.disconnect()
-            this.jedisPool.returnBrokenResource(jedis);
-            throw e;
-        } finally {
-            if (jedis != null) {
-                this.jedisPool.returnResource(jedis);
-            }
-        }
-
-        return data;
+    public int getTimeout() {
+        return timeout;
     }
 
 }
