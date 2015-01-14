@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.baidu.unbiz.redis.RedisClient;
+import com.github.knightliao.apollo.redis.RedisClient;
 
 /**
  * redis连接失效检测器，具备失效连接的自动剔除以及自动恢复

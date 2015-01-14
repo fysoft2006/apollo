@@ -8,8 +8,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.baidu.unbiz.redis.util.RandomUtil;
 import com.github.knightliao.apollo.redis.exception.RedisOperationException;
+import com.github.knightliao.apollo.redis.util.RandomUtil;
 
 /**
  * 提供高可用特性的Redis客户端调用回调抽象类
@@ -39,7 +39,7 @@ public abstract class BaseRedisCallBack<T> implements RedisCallBack<T> {
      *
      * @throws Exception
      */
-    protected abstract T doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception;
+    protected abstract T doOperation(RedisClient client) throws Exception;
 
     /**
      * 实现多写，随机读策略的模板方法
@@ -49,11 +49,11 @@ public abstract class BaseRedisCallBack<T> implements RedisCallBack<T> {
      *
      * @see RedisCallBack#doInRedis(java.util.List, boolean, Object)
      */
-    public final boolean doInRedis(List<com.baidu.unbiz.redis.RedisClient> clients, boolean isRead, Object key) {
+    public final boolean doInRedis(List<RedisClient> clients, boolean isRead, Object key) {
         List<Integer> randomIndexs = RandomUtil.randomizeWithinLimit(clients.size());
         boolean success = false;
         for (Integer index : randomIndexs) {
-            com.baidu.unbiz.redis.RedisClient client = clients.get(index);
+            RedisClient client = clients.get(index);
             long start = System.currentTimeMillis();
             try {
                 result = doOperation(client);

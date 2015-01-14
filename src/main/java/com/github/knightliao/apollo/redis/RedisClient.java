@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2014 Baidu, Inc. All Rights Reserved.
  */
-package com.baidu.unbiz.redis;
+package com.github.knightliao.apollo.redis;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,9 +29,8 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.baidu.unbiz.redis.util.JsonUtils;
-import com.github.knightliao.apollo.redis.RedisOperation;
 import com.github.knightliao.apollo.redis.config.RedisHAClientConfig;
+import com.github.knightliao.apollo.utils.data.JsonUtils;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

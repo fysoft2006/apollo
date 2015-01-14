@@ -1,4 +1,4 @@
-package com.baidu.unbiz.redis.util;
+package com.github.knightliao.apollo.redis.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,8 +14,9 @@ public class RandomUtil {
 
     /**
      * 产生[0-limit]之间的一个不重复随机list
-     * 
+     *
      * @param limit
+     *
      * @return 随机化的list
      */
     public static List<Integer> randomizeWithinLimit(int limit) {
