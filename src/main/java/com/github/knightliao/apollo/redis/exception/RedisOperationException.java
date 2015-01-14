@@ -1,4 +1,4 @@
-package com.baidu.unbiz.redis.exception;
+package com.github.knightliao.apollo.redis.exception;
 
 /**
  * redis操作异常

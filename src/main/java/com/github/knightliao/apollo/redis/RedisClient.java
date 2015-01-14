@@ -29,8 +29,9 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.baidu.unbiz.redis.config.RedisHAClientConfig;
 import com.baidu.unbiz.redis.util.JsonUtils;
+import com.github.knightliao.apollo.redis.RedisOperation;
+import com.github.knightliao.apollo.redis.config.RedisHAClientConfig;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

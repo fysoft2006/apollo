@@ -1,6 +1,8 @@
-package com.baidu.unbiz.redis;
+package com.github.knightliao.apollo.redis;
 
 import java.util.List;
+
+import com.baidu.unbiz.redis.RedisClient;
 
 /**
  * Redis客户端调用回调接口

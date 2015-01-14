@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2014 Baidu, Inc. All Rights Reserved.
  */
-package com.baidu.unbiz.redis;
+package com.github.knightliao.apollo.redis;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -14,35 +14,36 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.baidu.unbiz.redis.eviction.EvictionTimer;
-import com.baidu.unbiz.redis.eviction.Evictor;
-import com.baidu.unbiz.redis.exception.RedisOperationException;
+import com.github.knightliao.apollo.redis.eviction.EvictionTimer;
+import com.github.knightliao.apollo.redis.eviction.Evictor;
+import com.github.knightliao.apollo.redis.exception.RedisOperationException;
 
 /**
  * ClassName: RedisCacheManager <br>
  * Function: 提供高可用特性的Redis client管理类，针对一组redis server节点配置为单例模式使用，供其他组件使用。
- * <p>
+ * <p/>
  * 通过维护一组{@link RedisClient RedisClient}实例，来进行多写随机读策略，具体策略请参考
  * {@link BaseRedisCallBack BaseRedisCallBack}。 对于每个{@link RedisClient
  * RedisClient}实例的连接池配置不在本管理器中维护，而是由jedis客户端维护。 管理器提供失效连接自动剔除以及自动恢复策略，具体策略请参考
  * {@link com.baidu.unbiz.redis.eviction.Evictor Evictor}。
- * <p>
+ * <p/>
  * 本管理类可以通过两种方式来使用：<br>
  * 1) 直接API
- * 
+ * <p/>
  * <pre>
  * RedisCacheManager redisMgr = RedisCacheManager.of(getRedisClientList()).buildRetryTimes(1)
  *         .buildEvictorCheckPeriodSeconds(10).buildEvictorDelayCheckSeconds(5).buildEvictorFailedTimesToBeTickOut(3);
- * 
+ *
  * redisMgr.init(); // 如需要启动失效自动剔除恢复检测器，请务必手工调用init方法。
  * </pre>
- * <p>
+ * <p/>
  * 2) 使用spring xml配置，直接注入{@link RedisClient RedisClient}， 同时如需要启动失效自动剔除恢复检测器，请务必加入
  * <code>init-method="init"</code>配置。
- * 
+ * <p/>
  * <pre>
  * &lt;!-- redis configuration --&gt;
- *     &lt;bean id=&quot;redisCacheMgr&quot; class=&quot;com.baidu.unbiz.redis.RedisCacheManager&quot; init-method=&quot;init&quot;&gt;
+ *     &lt;bean id=&quot;redisCacheMgr&quot; class=&quot;com.baidu.unbiz.redis.RedisCacheManager&quot;
+ *     init-method=&quot;init&quot;&gt;
  *         &lt;property name=&quot;clientList&quot;&gt;
  *             &lt;list&gt;
  *                 &lt;ref bean=&quot;redisClient&quot; /&gt;
@@ -61,7 +62,7 @@ import com.baidu.unbiz.redis.exception.RedisOperationException;
  *             &lt;value&gt;${redis.evictor.failedTimesToBeTickOut}&lt;/value&gt;
  *         &lt;/property&gt;
  *     &lt;/bean&gt;
- *     
+ *
  *     &lt;bean id=&quot;redisClientConfig&quot; class=&quot;com.baidu.unbiz.redis.config.RedisHAClientConfig&quot;&gt;
  *         &lt;property name=&quot;cacheName&quot;&gt;
  *             &lt;value&gt;${redis.group1.client1.name}&lt;/value&gt;
@@ -79,14 +80,14 @@ import com.baidu.unbiz.redis.exception.RedisOperationException;
  *             &lt;value&gt;${redis.group1.client1.password}&lt;/value&gt;
  *         &lt;/property&gt;
  *     &lt;/bean&gt;
- *     
+ *
  *     &lt;bean id=&quot;redisClient&quot; class=&quot;com.baidu.unbiz.redis.RedisClient&quot;&gt;
  *         &lt;constructor-arg&gt;
  *             &lt;ref bean=&quot;redisClientConfig&quot; /&gt;
  *         &lt;/constructor-arg&gt;
  *     &lt;/bean&gt;
  * </pre>
- * 
+ *
  * @author Zhang Xu
  */
 public class RedisCacheManager {
@@ -96,7 +97,7 @@ public class RedisCacheManager {
     /**
      * 该管理类中维护的client连接集合，每个client均是连接池化的
      */
-    private List<RedisClient> clientList;
+    private List<com.baidu.unbiz.redis.RedisClient> clientList;
 
     /**
      * 重试是指当集群中所有的服务都暂时不可用时的retry times，默认为1
@@ -125,14 +126,16 @@ public class RedisCacheManager {
 
     /**
      * redis回调调用
-     * 
+     *
      * @param redisCallBack
      * @param clients
      * @param key
      * @param isRead
+     *
      * @return
      */
-    private <T> T execute(RedisCallBack<T> redisCallBack, List<RedisClient> clients, Object key, boolean isRead) {
+    private <T> T execute(RedisCallBack<T> redisCallBack, List<com.baidu.unbiz.redis.RedisClient> clients, Object key,
+                          boolean isRead) {
         for (int i = 0; i < getRetryTimes(); i++) {
             boolean result = redisCallBack.doInRedis(clients, isRead, key);
             if (result) {
@@ -149,11 +152,12 @@ public class RedisCacheManager {
 
     /**
      * 根据传入的client列表构造高可用的redis缓存管理器
-     * 
+     *
      * @param clients
+     *
      * @return
      */
-    public static RedisCacheManager of(List<RedisClient> clients) {
+    public static RedisCacheManager of(List<com.baidu.unbiz.redis.RedisClient> clients) {
         RedisCacheManager redisCacheMgr = new RedisCacheManager();
         redisCacheMgr.setClientList(clients);
         return redisCacheMgr;
@@ -196,7 +200,7 @@ public class RedisCacheManager {
             return;
         }
         cancelEvictor();
-        for (RedisClient connection : clientList) {
+        for (com.baidu.unbiz.redis.RedisClient connection : clientList) {
             try {
                 connection.shutdown();
             } catch (Exception e) {
@@ -206,10 +210,10 @@ public class RedisCacheManager {
     }
 
     public Object getSet(final Object key, final Integer expiration, final Object obj) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.getSet(key.toString(), obj, expiration);
                 }
 
@@ -226,12 +230,12 @@ public class RedisCacheManager {
     }
 
     public String put(final Object key, final Integer expiration, final Object obj) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         String cacheName = null;
         if (isAtLeastOneAvailable(clients)) {
             cacheName = clients.get(0).getCacheName();
             this.execute(new BaseRedisCallBack<Boolean>() {
-                public Boolean doOperation(RedisClient client) throws Exception {
+                public Boolean doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.set(key.toString(), obj, expiration);
                 }
 
@@ -244,10 +248,10 @@ public class RedisCacheManager {
     }
 
     public Object get(final Object key) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.get(key.toString());
                 }
 
@@ -260,12 +264,12 @@ public class RedisCacheManager {
     }
 
     public String remove(final Object key) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         String cacheName = null;
         if (isAtLeastOneAvailable(clients)) {
             cacheName = clients.get(0).getCacheName();
             this.execute(new BaseRedisCallBack<Boolean>() {
-                public Boolean doOperation(RedisClient client) throws Exception {
+                public Boolean doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.delete(key.toString());
                 }
 
@@ -286,10 +290,10 @@ public class RedisCacheManager {
     }
 
     public boolean existsKey(final String key) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Boolean>() {
-                public Boolean doOperation(RedisClient client) throws Exception {
+                public Boolean doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.exists(key);
                 }
 
@@ -302,11 +306,11 @@ public class RedisCacheManager {
     }
 
     public boolean extendTime(final String key, final Integer expirationMs) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
 
             return this.execute(new BaseRedisCallBack<Boolean>() {
-                public Boolean doOperation(RedisClient client) throws Exception {
+                public Boolean doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.expire(key, expirationMs / 1000);
                 }
 
@@ -319,10 +323,10 @@ public class RedisCacheManager {
     }
 
     public void hput(final String key, final String field, final Serializable fieldValue) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     client.hput(key, field, fieldValue);
                     return null;
                 }
@@ -335,10 +339,10 @@ public class RedisCacheManager {
     }
 
     public Object hget(final String key, final String field) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.hget(key, field);
                 }
 
@@ -351,10 +355,10 @@ public class RedisCacheManager {
     }
 
     public boolean hdel(final String key, final String field) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Boolean>() {
-                public Boolean doOperation(RedisClient client) throws Exception {
+                public Boolean doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.hdel(key, field);
                 }
 
@@ -367,10 +371,10 @@ public class RedisCacheManager {
     }
 
     public Set<String> hKeys(final String key) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Set<String>>() {
-                public Set<String> doOperation(RedisClient client) throws Exception {
+                public Set<String> doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.hKeys(key);
                 }
 
@@ -383,10 +387,10 @@ public class RedisCacheManager {
     }
 
     public List<Object> hValues(final String key) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<List<Object>>() {
-                public List<Object> doOperation(RedisClient client) throws Exception {
+                public List<Object> doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.hValues(key);
                 }
 
@@ -399,10 +403,10 @@ public class RedisCacheManager {
     }
 
     public boolean hExists(final String key, final String field) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Boolean>() {
-                public Boolean doOperation(RedisClient client) throws Exception {
+                public Boolean doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.hExists(key, field);
                 }
 
@@ -415,10 +419,10 @@ public class RedisCacheManager {
     }
 
     public long hLen(final String key) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Long>() {
-                public Long doOperation(RedisClient client) throws Exception {
+                public Long doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.hLen(key);
                 }
 
@@ -431,10 +435,10 @@ public class RedisCacheManager {
     }
 
     public void hmSet(final String key, final Map<String, Serializable> values) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     client.hmSet(key, values);
                     return null;
                 }
@@ -447,10 +451,10 @@ public class RedisCacheManager {
     }
 
     public List<Object> hmGet(final String key, final String... fields) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<List<Object>>() {
-                public List<Object> doOperation(RedisClient client) throws Exception {
+                public List<Object> doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.hmGet(key, fields);
                 }
 
@@ -463,10 +467,10 @@ public class RedisCacheManager {
     }
 
     public List<String> hmGetByStringSerializer(final String key, final String... fields) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<List<String>>() {
-                public List<String> doOperation(RedisClient client) throws Exception {
+                public List<String> doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.hmGetByStringSerializer(key, fields);
                 }
 
@@ -479,10 +483,10 @@ public class RedisCacheManager {
     }
 
     public void hmSetByStringSerializer(final String key, final Map<String, String> values) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     client.hmSetByStringSerializer(key, values);
                     return null;
                 }
@@ -495,10 +499,10 @@ public class RedisCacheManager {
     }
 
     public boolean sAdd(final String key, final String member) throws Exception {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.sAdd(key, member);
                 }
 
@@ -511,10 +515,10 @@ public class RedisCacheManager {
     }
 
     public boolean sRem(final String key, final String member) throws Exception {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     client.sRem(key, member);
                     return null;
                 }
@@ -528,10 +532,10 @@ public class RedisCacheManager {
     }
 
     public Set<String> sMembers(final String key) throws Exception {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Set<String>>() {
-                public Set<String> doOperation(RedisClient client) throws Exception {
+                public Set<String> doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.sMembers(key);
                 }
 
@@ -544,10 +548,10 @@ public class RedisCacheManager {
     }
 
     public Map<String, Object> hGetAll(final String key) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Map<String, Object>>() {
-                public Map<String, Object> doOperation(RedisClient client) throws Exception {
+                public Map<String, Object> doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.hGetAll(key);
                 }
 
@@ -560,10 +564,10 @@ public class RedisCacheManager {
     }
 
     public void lpush(final String key, final Object value) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     client.lpush(key, value);
                     return null;
                 }
@@ -576,10 +580,10 @@ public class RedisCacheManager {
     }
 
     public void rpush(final String key, final Object value) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     client.rpush(key, value);
                     return null;
                 }
@@ -592,10 +596,10 @@ public class RedisCacheManager {
     }
 
     public Object lpop(final String key, final Class<?> cls) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.lpop(key, cls);
                 }
 
@@ -608,10 +612,10 @@ public class RedisCacheManager {
     }
 
     public Object rpop(final String key, final Class<?> cls) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Object>() {
-                public Object doOperation(RedisClient client) throws Exception {
+                public Object doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.rpop(key, cls);
                 }
 
@@ -624,10 +628,10 @@ public class RedisCacheManager {
     }
 
     public Long incr(final String key) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Long>() {
-                public Long doOperation(RedisClient client) throws Exception {
+                public Long doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.incr(key);
                 }
 
@@ -640,10 +644,10 @@ public class RedisCacheManager {
     }
 
     public Long incrBy(final String key, final long integer) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Long>() {
-                public Long doOperation(RedisClient client) throws Exception {
+                public Long doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.incrBy(key, integer);
                 }
 
@@ -668,10 +672,10 @@ public class RedisCacheManager {
      * @see <a href="http://redis.io/commands/setnx">Redis: SETNX</a>
      */
     public Long setnx(final Object key, final int expiration, final Object obj) {
-        List<RedisClient> clients = this.getAliveClients(key);
+        List<com.baidu.unbiz.redis.RedisClient> clients = this.getAliveClients(key);
         if (isAtLeastOneAvailable(clients)) {
             return this.execute(new BaseRedisCallBack<Long>() {
-                public Long doOperation(RedisClient client) throws Exception {
+                public Long doOperation(com.baidu.unbiz.redis.RedisClient client) throws Exception {
                     return client.setnx(key.toString(), obj, expiration);
                 }
 
@@ -685,27 +689,30 @@ public class RedisCacheManager {
 
     /**
      * 检查至少一个redis client可用
-     * 
+     *
      * @param clients
-     * @throws com.baidu.unbiz.redis.exception.RedisOperationException
+     *
+     * @throws
      */
-    private boolean isAtLeastOneAvailable(Collection<RedisClient> clients) throws RedisOperationException {
+    private boolean isAtLeastOneAvailable(Collection<com.baidu.unbiz.redis.RedisClient> clients)
+        throws RedisOperationException {
         if (clients.isEmpty()) {
-            throw new RedisOperationException(
-                    "All redis client is disconnected! Please check the basic availablity of redis!");
+            throw new RedisOperationException("All redis client is disconnected! Please check the basic availablity " +
+                                                  "of redis!");
         }
         return true;
     }
 
     /**
      * 获取所有标记为可用的redis连接列表
-     * 
+     *
      * @param key
+     *
      * @return
      */
-    public List<RedisClient> getAliveClients(Object key) {
-        List<RedisClient> aliveClients = new ArrayList<RedisClient>();
-        for (RedisClient redisClient : clientList) {
+    public List<com.baidu.unbiz.redis.RedisClient> getAliveClients(Object key) {
+        List<com.baidu.unbiz.redis.RedisClient> aliveClients = new ArrayList<com.baidu.unbiz.redis.RedisClient>();
+        for (com.baidu.unbiz.redis.RedisClient redisClient : clientList) {
             if (redisClient.isAlive()) {
                 aliveClients.add(redisClient);
             }
@@ -726,11 +733,11 @@ public class RedisCacheManager {
         return this;
     }
 
-    public List<RedisClient> getClientList() {
+    public List<com.baidu.unbiz.redis.RedisClient> getClientList() {
         return clientList;
     }
 
-    public void setClientList(List<RedisClient> clientList) {
+    public void setClientList(List<com.baidu.unbiz.redis.RedisClient> clientList) {
         this.clientList = clientList;
     }
 
