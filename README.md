@@ -27,13 +27,16 @@ apollo.git branches and Maven version:
 
 支持的模块有：
 
-- common
-- config
-- data
-- io
-- time
-- tool 
-- web
+- db
+- redis
+- utils
+    - common
+    - config
+    - data
+    - io
+    - time
+    - tool 
+    - web
 
 ## 使用 ##
 
